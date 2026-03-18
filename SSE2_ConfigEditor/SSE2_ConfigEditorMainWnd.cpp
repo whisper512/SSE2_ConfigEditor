@@ -2,6 +2,7 @@
 
 #include <QTimer>
 #include <QFileDialog>
+#include <QMessageBox>
 
 SSE2_ConfigEditorMainWnd::SSE2_ConfigEditorMainWnd(QWidget* parent)
     : QMainWindow(parent),
@@ -64,6 +65,11 @@ void SSE2_ConfigEditorMainWnd::InitMenu()
 void SSE2_ConfigEditorMainWnd::ConnectSlots()
 {
     connect(ui.comboBox_faction, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SSE2_ConfigEditorMainWnd::OnFactionChanged);
+
+    connect(ui.lineEdit_Titan, &QLineEdit::editingFinished, this, &SSE2_ConfigEditorMainWnd::OnEditFinished);
+    connect(ui.lineEdit_SuperCapitalship, &QLineEdit::editingFinished, this, &SSE2_ConfigEditorMainWnd::OnEditFinished);
+    connect(ui.lineEdit_starStarbase, &QLineEdit::editingFinished, this, &SSE2_ConfigEditorMainWnd::OnEditFinished);
+    connect(ui.lineEdit_planetStarbase, &QLineEdit::editingFinished, this, &SSE2_ConfigEditorMainWnd::OnEditFinished);
 }
 
 void SSE2_ConfigEditorMainWnd::ReadConfig()
@@ -163,6 +169,9 @@ void SSE2_ConfigEditorMainWnd::ReadConfig()
             m_iplanetStarbase = unitLimit;
         }
     }
+
+
+    UpdateData();
 }
 
 void SSE2_ConfigEditorMainWnd::OnFactionChanged(int index)
@@ -186,11 +195,127 @@ void SSE2_ConfigEditorMainWnd::OnOpenGamePath()
         QFileInfo fileInfo(strFilePath);
         m_strGamePath = fileInfo.absolutePath();
     }
+
+    ReadConfig();
 }
 
 void SSE2_ConfigEditorMainWnd::OnEditConfig()
 {
-    //配置文件是json文件
+    if (m_strGamePath.isEmpty())
+    {
+        return;
+    }
+
+    QString strConfigFile;
+    switch (m_eFaction)
+    {
+    case Faction_TL:
+        strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(TL_PlayerConfig);
+        break;
+    case Faction_TR:
+        strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(TR_PlayerConfig);
+        break;
+    case Faction_VL:
+        strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(VL_PlayerConfig);
+        break;
+    case Faction_VR:
+        strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(VR_PlayerConfig);
+        break;
+    case Faction_AL:
+        strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(AL_PlayerConfig);
+        break;
+    case Faction_AR:
+        strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(AR_PlayerConfig);
+        break;
+    default:
+        return;
+    }
+
+    QFile file(strConfigFile);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        qDebug() << "无法打开配置文件:" << strConfigFile;
+        return;
+    }
+
+    QByteArray jsonData = file.readAll();
+    file.close();
+
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData);
+    if (jsonDoc.isNull() || !jsonDoc.isObject())
+    {
+        qDebug() << "JSON 文件格式错误:" << strConfigFile;
+        return;
+    }
+
+    QJsonObject jsonObj = jsonDoc.object();
+    QJsonObject unitLimitsObj = jsonObj.value("unit_limits").toObject();
+
+    // 更新 global 数组中的数据
+    QJsonArray globalArray = unitLimitsObj.value("global").toArray();
+    for (int i = 0; i < globalArray.size(); ++i)
+    {
+        QJsonObject item = globalArray[i].toObject();
+        QString tag = item.value("tag").toString();
+
+        if (tag == "titan")
+        {
+            item["unit_limit"] = m_iTitanNum;
+            globalArray[i] = item;
+        }
+        else if (tag == "super_capital_ship")
+        {
+            item["unit_limit"] = m_iSuperCapitalshipNum;
+            globalArray[i] = item;
+        }
+    }
+    unitLimitsObj["global"] = globalArray;
+
+    // 更新 star 数组中的数据
+    QJsonArray starArray = unitLimitsObj.value("star").toArray();
+    for (int i = 0; i < starArray.size(); ++i)
+    {
+        QJsonObject item = starArray[i].toObject();
+        QString tag = item.value("tag").toString();
+
+        if (tag == "starbase")
+        {
+            item["unit_limit"] = m_istarStarbase;
+            starArray[i] = item;
+        }
+    }
+    unitLimitsObj["star"] = starArray;
+
+    // 更新 planet 数组中的数据
+    QJsonArray planetArray = unitLimitsObj.value("planet").toArray();
+    for (int i = 0; i < planetArray.size(); ++i)
+    {
+        QJsonObject item = planetArray[i].toObject();
+        QString tag = item.value("tag").toString();
+
+        if (tag == "starbase")
+        {
+            item["unit_limit"] = m_iplanetStarbase;
+            planetArray[i] = item;
+        }
+    }
+    unitLimitsObj["planet"] = planetArray;
+
+    // 更新 JSON 对象
+    jsonObj["unit_limits"] = unitLimitsObj;
+
+    // 写入文件
+    jsonDoc.setObject(jsonObj);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+        qDebug() << "无法写入配置文件:" << strConfigFile;
+        return;
+    }
+
+    file.write(jsonDoc.toJson());
+    file.close();
+
+    QMessageBox::information(this, tr("提示"), tr("配置文件已成功修改！"));
 }
 
 void SSE2_ConfigEditorMainWnd::OnSaveBackup()
@@ -199,6 +324,11 @@ void SSE2_ConfigEditorMainWnd::OnSaveBackup()
 
 void SSE2_ConfigEditorMainWnd::UpdateData()
 {
+    ui.lineEdit_Titan->setText(QString::number(m_iTitanNum));
+    ui.lineEdit_SuperCapitalship->setText(QString::number(m_iSuperCapitalshipNum));
+    ui.lineEdit_starStarbase->setText(QString::number(m_istarStarbase));
+    ui.lineEdit_planetStarbase->setText(QString::number(m_iplanetStarbase));
+
 }
 
 
@@ -217,3 +347,10 @@ void SSE2_ConfigEditorMainWnd::IntiEditor()
     ui.comboBox_faction->addItem(tr("圣临反叛派"));
 }
 
+void SSE2_ConfigEditorMainWnd::OnEditFinished()
+{
+    m_iTitanNum = ui.lineEdit_Titan->text().toInt();
+    m_iSuperCapitalshipNum = ui.lineEdit_SuperCapitalship->text().toInt();
+    m_istarStarbase = ui.lineEdit_starStarbase->text().toInt();
+    m_iplanetStarbase = ui.lineEdit_planetStarbase->text().toInt();
+}

@@ -68,5 +68,8 @@ private:
 
     void UpdateData();
 
+private slots:
+    void OnEditFinished();
+
 };
 
