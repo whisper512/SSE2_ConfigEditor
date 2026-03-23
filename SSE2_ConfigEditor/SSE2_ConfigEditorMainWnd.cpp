@@ -115,9 +115,14 @@ void SSE2_ConfigEditorMainWnd::ReadConfig()
     file.close();
 
     QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData);
+    ParseUnitLimitConfigFromJson(jsonDoc);
+}
+
+void SSE2_ConfigEditorMainWnd::ParseUnitLimitConfigFromJson(const QJsonDocument& jsonDoc)
+{
     if (jsonDoc.isNull() || !jsonDoc.isObject())
     {
-        qDebug() << "JSON 文件格式错误:" << strConfigFile;
+        qDebug() << "JSON 文件格式错误";
         return;
     }
 
@@ -170,8 +175,7 @@ void SSE2_ConfigEditorMainWnd::ReadConfig()
         }
     }
 
-
-    UpdateData();
+    UpdateUnitsLimitData();
 }
 
 void SSE2_ConfigEditorMainWnd::OnFactionChanged(int index)
@@ -322,7 +326,7 @@ void SSE2_ConfigEditorMainWnd::OnSaveBackup()
 {
 }
 
-void SSE2_ConfigEditorMainWnd::UpdateData()
+void SSE2_ConfigEditorMainWnd::UpdateUnitsLimitData()
 {
     ui.lineEdit_Titan->setText(QString::number(m_iTitanNum));
     ui.lineEdit_SuperCapitalship->setText(QString::number(m_iSuperCapitalshipNum));
@@ -330,6 +334,41 @@ void SSE2_ConfigEditorMainWnd::UpdateData()
     ui.lineEdit_planetStarbase->setText(QString::number(m_iplanetStarbase));
 
 }
+
+void SSE2_ConfigEditorMainWnd::WriteUnitLimitConfigToJson()
+{
+    
+}
+
+void SSE2_ConfigEditorMainWnd::ParseMaxSupplyConfigFromJson(const QJsonDocument& jsonDoc)
+{
+    if (jsonDoc.isNull() || !jsonDoc.isObject())
+    {
+        qDebug() << "JSON 文件格式错误";
+        return;
+    }
+
+    QJsonObject jsonObj = jsonDoc.object();
+    QJsonObject maxSupplyObj = jsonObj.value("max_supply").toObject();
+    QJsonArray levelsArray = maxSupplyObj.value("levels").toArray();
+
+    m_maxSupplyList.clear();
+    for (const QJsonValue& value : levelsArray)
+    {
+        QJsonObject item = value.toObject();
+        int maxSupply = item.value("max_supply").toInt();
+        m_maxSupplyList.append(maxSupply);
+    }
+
+
+}
+
+void SSE2_ConfigEditorMainWnd::UpdateMaxSupplyData()
+{
+
+}
+
+
 
 
 void SSE2_ConfigEditorMainWnd::IntiEditor()
@@ -353,4 +392,6 @@ void SSE2_ConfigEditorMainWnd::OnEditFinished()
     m_iSuperCapitalshipNum = ui.lineEdit_SuperCapitalship->text().toInt();
     m_istarStarbase = ui.lineEdit_starStarbase->text().toInt();
     m_iplanetStarbase = ui.lineEdit_planetStarbase->text().toInt();
+
+
 }

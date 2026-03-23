@@ -49,6 +49,7 @@ private:
     int m_iSuperCapitalshipNum;
     int m_istarStarbase;
     int m_iplanetStarbase;
+    QList<int> m_maxSupplyList;  // 存储各级max_supply 值
 
 private:
     void InitApplication();
@@ -57,16 +58,29 @@ private:
     void InitMenu();
     void ConnectSlots();
 
-
-
     void ReadConfig();
+    void ParseUnitLimitConfigFromJson(const QJsonDocument& jsonDoc);
+    void UpdateUnitsLimitData();
+    void WriteUnitLimitConfigToJson();
+
+    void ParseMaxSupplyConfigFromJson(const QJsonDocument& jsonDoc);
+    void UpdateMaxSupplyData();
+    void WriteMaxSupplyConfigToJson();
+
     
     void OnFactionChanged(int index);
     void OnOpenGamePath();
     void OnEditConfig();
     void OnSaveBackup();
 
-    void UpdateData();
+    //"default_starting_assets":
+    //{
+    //    "credits": 1000,
+    //        "metal" : 400,
+    //        "crystal" : 250
+    //},
+
+
 
 private slots:
     void OnEditFinished();
