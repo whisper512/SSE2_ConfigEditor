@@ -264,7 +264,7 @@ void SSE2_ConfigEditorMainWnd::OnEditConfig()
     WriteUnitLimitConfigToJson();
     // 写入最大供应量配置
     WriteMaxSupplyConfigToJson();
-
+    // 写入默认起始资产配置
     WriteDefaultStartingAssetsToJson();
 
     QMessageBox::information(this, tr("提示"), tr("配置文件已成功修改！"));
