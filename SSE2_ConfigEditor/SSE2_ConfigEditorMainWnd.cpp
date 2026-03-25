@@ -60,6 +60,10 @@ void SSE2_ConfigEditorMainWnd::InitMenu()
     m_pActionSaveBackup->setShortcut(QKeySequence::SaveAs);
     connect(m_pActionSaveBackup, &QAction::triggered, this, &SSE2_ConfigEditorMainWnd::OnSaveBackup);
     ui.menu_File->addAction(m_pActionSaveBackup);
+
+
+    ui.label_Maxsupply6->setVisible(false);
+    ui.lineEdit_Maxsupply6->setVisible(false);
 }
 
 void SSE2_ConfigEditorMainWnd::ConnectSlots()
@@ -115,7 +119,11 @@ void SSE2_ConfigEditorMainWnd::ReadConfig()
     file.close();
 
     QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData);
+    
     ParseUnitLimitConfigFromJson(jsonDoc);
+    ParseMaxSupplyConfigFromJson(jsonDoc);
+
+
 }
 
 void SSE2_ConfigEditorMainWnd::ParseUnitLimitConfigFromJson(const QJsonDocument& jsonDoc)
@@ -178,11 +186,45 @@ void SSE2_ConfigEditorMainWnd::ParseUnitLimitConfigFromJson(const QJsonDocument&
     UpdateUnitsLimitData();
 }
 
+void SSE2_ConfigEditorMainWnd::ParseMaxSupplyConfigFromJson(const QJsonDocument& jsonDoc)
+{
+    if (jsonDoc.isNull() || !jsonDoc.isObject())
+    {
+        qDebug() << "JSON 文件格式错误";
+        return;
+    }
+
+    QJsonObject jsonObj = jsonDoc.object();
+    QJsonObject maxSupplyObj = jsonObj.value("max_supply").toObject();
+    QJsonArray levelsArray = maxSupplyObj.value("levels").toArray();
+
+    m_listMaxSupply.clear();
+    for (const QJsonValue& value : levelsArray)
+    {
+        QJsonObject item = value.toObject();
+        int maxSupply = item.value("max_supply").toInt();
+        m_listMaxSupply.append(maxSupply);
+    }
+    UpdateMaxSupplyData();
+
+}
+
+
 void SSE2_ConfigEditorMainWnd::OnFactionChanged(int index)
 {
     m_eFaction = (Faction)index;
     ReadConfig();
     
+    if (m_eFaction == Faction_VL || m_eFaction == Faction_VR)
+    {
+        ui.label_Maxsupply6->setVisible(true);
+        ui.lineEdit_Maxsupply6->setVisible(true);
+    }
+    else
+    {
+        ui.label_Maxsupply6->setVisible(false);
+        ui.lineEdit_Maxsupply6->setVisible(false);
+    }
 }
 
 void SSE2_ConfigEditorMainWnd::OnOpenGamePath()
@@ -204,6 +246,33 @@ void SSE2_ConfigEditorMainWnd::OnOpenGamePath()
 }
 
 void SSE2_ConfigEditorMainWnd::OnEditConfig()
+{
+    if (m_strGamePath.isEmpty())
+    {
+        return;
+    }
+
+    // 写入单位限制配置
+    WriteUnitLimitConfigToJson();
+    // 写入最大供应量配置
+    WriteMaxSupplyConfigToJson();
+
+    QMessageBox::information(this, tr("提示"), tr("配置文件已成功修改！"));
+}
+
+void SSE2_ConfigEditorMainWnd::OnSaveBackup()
+{
+}
+
+void SSE2_ConfigEditorMainWnd::UpdateUnitsLimitData()
+{
+    ui.lineEdit_Titan->setText(QString::number(m_iTitanNum));
+    ui.lineEdit_SuperCapitalship->setText(QString::number(m_iSuperCapitalshipNum));
+    ui.lineEdit_starStarbase->setText(QString::number(m_istarStarbase));
+    ui.lineEdit_planetStarbase->setText(QString::number(m_iplanetStarbase));
+}
+
+void SSE2_ConfigEditorMainWnd::WriteUnitLimitConfigToJson()
 {
     if (m_strGamePath.isEmpty())
     {
@@ -318,54 +387,134 @@ void SSE2_ConfigEditorMainWnd::OnEditConfig()
 
     file.write(jsonDoc.toJson());
     file.close();
-
-    QMessageBox::information(this, tr("提示"), tr("配置文件已成功修改！"));
 }
 
-void SSE2_ConfigEditorMainWnd::OnSaveBackup()
+void SSE2_ConfigEditorMainWnd::UpdateMaxSupplyData()
 {
+    if (m_eFaction == Faction_TL || m_eFaction == Faction_TR || m_eFaction == Faction_AL|| m_eFaction == Faction_AR)
+    {
+        if (m_listMaxSupply.size() == 6)
+        {
+            ui.lineEdit_Maxsupply0->setText(QString::number(m_listMaxSupply[0]));
+            ui.lineEdit_Maxsupply1->setText(QString::number(m_listMaxSupply[1]));
+            ui.lineEdit_Maxsupply2->setText(QString::number(m_listMaxSupply[2]));
+            ui.lineEdit_Maxsupply3->setText(QString::number(m_listMaxSupply[3]));
+            ui.lineEdit_Maxsupply4->setText(QString::number(m_listMaxSupply[4]));
+            ui.lineEdit_Maxsupply5->setText(QString::number(m_listMaxSupply[5]));
+        }
+        else
+        {
+            QMessageBox::warning(this, tr("警告"), tr("max_supply 数据不完整，请检查配置文件！"));
+        }
+    }
+    else
+    {
+        if (m_listMaxSupply.size() == 7)
+        {
+            ui.lineEdit_Maxsupply0->setText(QString::number(m_listMaxSupply[0]));
+            ui.lineEdit_Maxsupply1->setText(QString::number(m_listMaxSupply[1]));
+            ui.lineEdit_Maxsupply2->setText(QString::number(m_listMaxSupply[2]));
+            ui.lineEdit_Maxsupply3->setText(QString::number(m_listMaxSupply[3]));
+            ui.lineEdit_Maxsupply4->setText(QString::number(m_listMaxSupply[4]));
+            ui.lineEdit_Maxsupply5->setText(QString::number(m_listMaxSupply[5]));
+            ui.lineEdit_Maxsupply6->setText(QString::number(m_listMaxSupply[6]));
+        }
+        else
+        {
+            QMessageBox::warning(this, tr("警告"), tr("max_supply 数据不完整，请检查配置文件！"));
+        }
+    }
 }
 
-void SSE2_ConfigEditorMainWnd::UpdateUnitsLimitData()
+void SSE2_ConfigEditorMainWnd::WriteMaxSupplyConfigToJson()
 {
-    ui.lineEdit_Titan->setText(QString::number(m_iTitanNum));
-    ui.lineEdit_SuperCapitalship->setText(QString::number(m_iSuperCapitalshipNum));
-    ui.lineEdit_starStarbase->setText(QString::number(m_istarStarbase));
-    ui.lineEdit_planetStarbase->setText(QString::number(m_iplanetStarbase));
+    if (m_strGamePath.isEmpty())
+    {
+        return;
+    }
 
-}
+    QString strConfigFile;
+    switch (m_eFaction)
+    {
+    case Faction_TL:
+        strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(TL_PlayerConfig);
+        break;
+    case Faction_TR:
+        strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(TR_PlayerConfig);
+        break;
+    case Faction_VL:
+        strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(VL_PlayerConfig);
+        break;
+    case Faction_VR:
+        strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(VR_PlayerConfig);
+        break;
+    case Faction_AL:
+        strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(AL_PlayerConfig);
+        break;
+    case Faction_AR:
+        strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(AR_PlayerConfig);
+        break;
+    default:
+        return;
+    }
 
-void SSE2_ConfigEditorMainWnd::WriteUnitLimitConfigToJson()
-{
-    
-}
+    QFile file(strConfigFile);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        qDebug() << "无法打开配置文件:" << strConfigFile;
+        return;
+    }
 
-void SSE2_ConfigEditorMainWnd::ParseMaxSupplyConfigFromJson(const QJsonDocument& jsonDoc)
-{
+    QByteArray jsonData = file.readAll();
+    file.close();
+
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData);
     if (jsonDoc.isNull() || !jsonDoc.isObject())
     {
-        qDebug() << "JSON 文件格式错误";
+        qDebug() << "JSON 文件格式错误:" << strConfigFile;
         return;
     }
 
     QJsonObject jsonObj = jsonDoc.object();
     QJsonObject maxSupplyObj = jsonObj.value("max_supply").toObject();
-    QJsonArray levelsArray = maxSupplyObj.value("levels").toArray();
 
-    m_maxSupplyList.clear();
-    for (const QJsonValue& value : levelsArray)
+    // 从界面获取当前值
+    m_listMaxSupply.clear();
+    m_listMaxSupply.append(ui.lineEdit_Maxsupply0->text().toInt());
+    m_listMaxSupply.append(ui.lineEdit_Maxsupply1->text().toInt());
+    m_listMaxSupply.append(ui.lineEdit_Maxsupply2->text().toInt());
+    m_listMaxSupply.append(ui.lineEdit_Maxsupply3->text().toInt());
+    m_listMaxSupply.append(ui.lineEdit_Maxsupply4->text().toInt());
+    m_listMaxSupply.append(ui.lineEdit_Maxsupply5->text().toInt());
+
+    // 瓦萨里派系有第7个等级
+    if (m_eFaction == Faction_VL || m_eFaction == Faction_VR)
     {
-        QJsonObject item = value.toObject();
-        int maxSupply = item.value("max_supply").toInt();
-        m_maxSupplyList.append(maxSupply);
+        m_listMaxSupply.append(ui.lineEdit_Maxsupply6->text().toInt());
     }
 
+    // 更新 levels 数组
+    QJsonArray levelsArray;
+    for (int maxSupply : m_listMaxSupply)
+    {
+        QJsonObject item;
+        item["max_supply"] = maxSupply;
+        levelsArray.append(item);
+    }
 
-}
+    maxSupplyObj["levels"] = levelsArray;
+    jsonObj["max_supply"] = maxSupplyObj;
 
-void SSE2_ConfigEditorMainWnd::UpdateMaxSupplyData()
-{
+    // 写入文件
+    jsonDoc.setObject(jsonObj);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+        qDebug() << "无法写入配置文件:" << strConfigFile;
+        return;
+    }
 
+    file.write(jsonDoc.toJson());
+    file.close();
 }
 
 
@@ -392,6 +541,4 @@ void SSE2_ConfigEditorMainWnd::OnEditFinished()
     m_iSuperCapitalshipNum = ui.lineEdit_SuperCapitalship->text().toInt();
     m_istarStarbase = ui.lineEdit_starStarbase->text().toInt();
     m_iplanetStarbase = ui.lineEdit_planetStarbase->text().toInt();
-
-
 }
