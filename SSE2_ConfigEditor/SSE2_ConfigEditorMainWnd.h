@@ -50,6 +50,9 @@ private:
     int m_istarStarbase;
     int m_iplanetStarbase;
     QList<int> m_listMaxSupply;  // 存储各级max_supply 值
+    int m_iDefaultCredits;      // 默认起始信用点
+    int m_iDefaultMetal;        // 默认起始金属
+    int m_iDefaultCrystal;      // 默认起始水晶
 
 private:
     void InitApplication();
@@ -62,11 +65,16 @@ private:
 
     void ParseUnitLimitConfigFromJson(const QJsonDocument& jsonDoc);
     void UpdateUnitsLimitData();
+    void WriteUnitLimitConfigToJson();
+
     void ParseMaxSupplyConfigFromJson(const QJsonDocument& jsonDoc);
     void UpdateMaxSupplyData();
-
     void WriteMaxSupplyConfigToJson();
-    void WriteUnitLimitConfigToJson();
+
+    void ParseDefaultStartingAssetsFromJson(const QJsonDocument& jsonDoc);
+    void UpdateDefaultStartingAssetsData();
+    void WriteDefaultStartingAssetsToJson();
+
 
     
     void OnFactionChanged(int index);
@@ -77,12 +85,7 @@ private:
 
     void OnSaveBackup();
 
-    //"default_starting_assets":
-    //{
-    //    "credits": 1000,
-    //        "metal" : 400,
-    //        "crystal" : 250
-    //},
+    
 
 
 

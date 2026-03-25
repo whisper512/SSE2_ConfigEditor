@@ -14,7 +14,10 @@ SSE2_ConfigEditorMainWnd::SSE2_ConfigEditorMainWnd(QWidget* parent)
     m_iTitanNum(1),
     m_iSuperCapitalshipNum(1),
     m_istarStarbase(4),
-    m_iplanetStarbase(1)
+    m_iplanetStarbase(1),
+    m_iDefaultCredits(1000),
+    m_iDefaultMetal(400),
+    m_iDefaultCrystal(250)
 
 {
     ui.setupUi(this);
@@ -122,7 +125,7 @@ void SSE2_ConfigEditorMainWnd::ReadConfig()
     
     ParseUnitLimitConfigFromJson(jsonDoc);
     ParseMaxSupplyConfigFromJson(jsonDoc);
-
+    ParseDefaultStartingAssetsFromJson(jsonDoc);
 
 }
 
@@ -219,11 +222,16 @@ void SSE2_ConfigEditorMainWnd::OnFactionChanged(int index)
     {
         ui.label_Maxsupply6->setVisible(true);
         ui.lineEdit_Maxsupply6->setVisible(true);
+
+        ui.label_default_starting_credit->setVisible(false);
+        ui.lineEdit_default_starting_credit->setVisible(false);
     }
     else
     {
         ui.label_Maxsupply6->setVisible(false);
         ui.lineEdit_Maxsupply6->setVisible(false);
+        ui.label_default_starting_credit->setVisible(true);
+        ui.lineEdit_default_starting_credit->setVisible(true);
     }
 }
 
@@ -256,6 +264,8 @@ void SSE2_ConfigEditorMainWnd::OnEditConfig()
     WriteUnitLimitConfigToJson();
     // 写入最大供应量配置
     WriteMaxSupplyConfigToJson();
+
+    WriteDefaultStartingAssetsToJson();
 
     QMessageBox::information(this, tr("提示"), tr("配置文件已成功修改！"));
 }
@@ -517,6 +527,121 @@ void SSE2_ConfigEditorMainWnd::WriteMaxSupplyConfigToJson()
     file.close();
 }
 
+void SSE2_ConfigEditorMainWnd::ParseDefaultStartingAssetsFromJson(const QJsonDocument& jsonDoc)
+{
+    if (jsonDoc.isNull() || !jsonDoc.isObject())
+    {
+        qDebug() << "JSON 文件格式错误";
+        return;
+    }
+
+    QJsonObject jsonObj = jsonDoc.object();
+    QJsonObject defaultStartingAssetsObj = jsonObj.value("default_starting_assets").toObject();
+
+    // 瓦萨里派系没有credits字段
+    if (m_eFaction != Faction_VL && m_eFaction != Faction_VR)
+    {
+        m_iDefaultCredits = defaultStartingAssetsObj.value("credits").toInt(1000);
+    }
+
+    m_iDefaultMetal = defaultStartingAssetsObj.value("metal").toInt(400);
+    m_iDefaultCrystal = defaultStartingAssetsObj.value("crystal").toInt(250);
+
+    UpdateDefaultStartingAssetsData();
+}
+
+void SSE2_ConfigEditorMainWnd::UpdateDefaultStartingAssetsData()
+{
+    // 瓦萨里派系没有credits字段
+    if (m_eFaction != Faction_VL && m_eFaction != Faction_VR)
+    {
+        ui.lineEdit_default_starting_credit->setText(QString::number(m_iDefaultCredits));
+    }
+
+    ui.lineEdit_default_starting_metal->setText(QString::number(m_iDefaultMetal));
+    ui.lineEdit_default_starting_crystal->setText(QString::number(m_iDefaultCrystal));
+}
+
+void SSE2_ConfigEditorMainWnd::WriteDefaultStartingAssetsToJson()
+{
+    if (m_strGamePath.isEmpty())
+    {
+        return;
+    }
+
+    QString strConfigFile;
+    switch (m_eFaction)
+    {
+    case Faction_TL:
+        strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(TL_PlayerConfig);
+        break;
+    case Faction_TR:
+        strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(TR_PlayerConfig);
+        break;
+    case Faction_VL:
+        strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(VL_PlayerConfig);
+        break;
+    case Faction_VR:
+        strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(VR_PlayerConfig);
+        break;
+    case Faction_AL:
+        strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(AL_PlayerConfig);
+        break;
+    case Faction_AR:
+        strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(AR_PlayerConfig);
+        break;
+    default:
+        return;
+    }
+
+    QFile file(strConfigFile);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        qDebug() << "无法打开配置文件:" << strConfigFile;
+        return;
+    }
+
+    QByteArray jsonData = file.readAll();
+    file.close();
+
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData);
+    if (jsonDoc.isNull() || !jsonDoc.isObject())
+    {
+        qDebug() << "JSON 文件格式错误:" << strConfigFile;
+        return;
+    }
+
+    QJsonObject jsonObj = jsonDoc.object();
+    QJsonObject defaultStartingAssetsObj = jsonObj.value("default_starting_assets").toObject();
+
+    // 从界面获取当前值
+    // 瓦萨里派系没有credits字段
+    if (m_eFaction != Faction_VL && m_eFaction != Faction_VR)
+    {
+        m_iDefaultCredits = ui.lineEdit_default_starting_credit->text().toInt();
+        defaultStartingAssetsObj["credits"] = m_iDefaultCredits;
+    }
+
+    m_iDefaultMetal = ui.lineEdit_default_starting_metal->text().toInt();
+    m_iDefaultCrystal = ui.lineEdit_default_starting_crystal->text().toInt();
+
+    defaultStartingAssetsObj["metal"] = m_iDefaultMetal;
+    defaultStartingAssetsObj["crystal"] = m_iDefaultCrystal;
+
+    jsonObj["default_starting_assets"] = defaultStartingAssetsObj;
+
+    // 写入文件
+    jsonDoc.setObject(jsonObj);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+        qDebug() << "无法写入配置文件:" << strConfigFile;
+        return;
+    }
+
+    file.write(jsonDoc.toJson());
+    file.close();
+}
+
 
 
 
@@ -541,4 +666,13 @@ void SSE2_ConfigEditorMainWnd::OnEditFinished()
     m_iSuperCapitalshipNum = ui.lineEdit_SuperCapitalship->text().toInt();
     m_istarStarbase = ui.lineEdit_starStarbase->text().toInt();
     m_iplanetStarbase = ui.lineEdit_planetStarbase->text().toInt();
+
+    // 瓦萨里派系没有credits字段
+    if (m_eFaction != Faction_VL && m_eFaction != Faction_VR)
+    {
+        m_iDefaultCredits = ui.lineEdit_default_starting_credit->text().toInt();
+    }
+
+    m_iDefaultMetal = ui.lineEdit_default_starting_metal->text().toInt();
+    m_iDefaultCrystal = ui.lineEdit_default_starting_crystal->text().toInt();
 }
