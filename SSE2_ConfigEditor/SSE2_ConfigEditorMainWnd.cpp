@@ -36,6 +36,7 @@ void SSE2_ConfigEditorMainWnd::InitApplication()
             InitMainWnd();
             IntiEditor();
             InitMenu();
+            InitData();
             ConnectSlots();
         });
 }
@@ -45,6 +46,7 @@ void SSE2_ConfigEditorMainWnd::InitMainWnd()
     this->setWindowIcon(QIcon(":/SSE2_ConfigEditorMainWnd/res/blackcat.png"));
     this->setWindowFlags(this->windowFlags() & ~Qt::WindowMaximizeButtonHint);
     this->show();
+
 }
 
 void SSE2_ConfigEditorMainWnd::InitMenu()
@@ -67,6 +69,27 @@ void SSE2_ConfigEditorMainWnd::InitMenu()
 
     ui.label_Maxsupply6->setVisible(false);
     ui.lineEdit_Maxsupply6->setVisible(false);
+}
+
+void SSE2_ConfigEditorMainWnd::InitData()
+{
+    m_listTradeCapitalshipInfo[0].eCapitalship = Capitalship_battle;
+    m_listTradeCapitalshipInfo[1].eCapitalship = Capitalship_colony;
+    m_listTradeCapitalshipInfo[2].eCapitalship = Capitalship_support;
+    m_listTradeCapitalshipInfo[3].eCapitalship = Capitalship_carrier;
+    m_listTradeCapitalshipInfo[4].eCapitalship = Capitalship_siege;
+
+    m_listVasariCapitalshipInfo[0].eCapitalship = Capitalship_battle;
+    m_listVasariCapitalshipInfo[1].eCapitalship = Capitalship_colony;
+    m_listVasariCapitalshipInfo[2].eCapitalship = Capitalship_support;
+    m_listVasariCapitalshipInfo[3].eCapitalship = Capitalship_carrier;
+    m_listVasariCapitalshipInfo[4].eCapitalship = Capitalship_siege;
+
+    m_listAdventCapitalshipInfo[0].eCapitalship = Capitalship_battle;
+    m_listAdventCapitalshipInfo[1].eCapitalship = Capitalship_colony;
+    m_listAdventCapitalshipInfo[2].eCapitalship = Capitalship_support;
+    m_listAdventCapitalshipInfo[3].eCapitalship = Capitalship_carrier;
+    m_listAdventCapitalshipInfo[4].eCapitalship = Capitalship_siege;
 }
 
 void SSE2_ConfigEditorMainWnd::ConnectSlots()
@@ -215,7 +238,7 @@ void SSE2_ConfigEditorMainWnd::ParseMaxSupplyConfigFromJson(const QJsonDocument&
 
 void SSE2_ConfigEditorMainWnd::OnFactionChanged(int index)
 {
-    m_eFaction = (Faction)index;
+    m_eFaction = (eFaction)index;
     ReadConfig();
     
     if (m_eFaction == Faction_VL || m_eFaction == Faction_VR)
@@ -658,6 +681,23 @@ void SSE2_ConfigEditorMainWnd::IntiEditor()
     ui.comboBox_faction->addItem(tr("瓦萨里反叛派"));
     ui.comboBox_faction->addItem(tr("圣临忠诚派"));
     ui.comboBox_faction->addItem(tr("圣临反叛派"));
+
+    ui.comboBox_CapitalShip->addItem(tr("战斗主力舰"));
+    ui.comboBox_CapitalShip->addItem(tr("殖民主力舰"));
+    ui.comboBox_CapitalShip->addItem(tr("支援主力舰"));
+    ui.comboBox_CapitalShip->addItem(tr("航母主力舰"));
+    ui.comboBox_CapitalShip->addItem(tr("攻城主力舰"));
+
+    ui.comboBox_Levels->addItem(tr("1"));
+    ui.comboBox_Levels->addItem(tr("2"));
+    ui.comboBox_Levels->addItem(tr("3"));
+    ui.comboBox_Levels->addItem(tr("4"));
+    ui.comboBox_Levels->addItem(tr("5"));
+    ui.comboBox_Levels->addItem(tr("6"));
+    ui.comboBox_Levels->addItem(tr("7"));
+    ui.comboBox_Levels->addItem(tr("8"));
+    ui.comboBox_Levels->addItem(tr("9"));
+    ui.comboBox_Levels->addItem(tr("10"));
 }
 
 void SSE2_ConfigEditorMainWnd::OnEditFinished()

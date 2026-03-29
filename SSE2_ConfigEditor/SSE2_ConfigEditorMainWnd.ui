@@ -335,7 +335,7 @@
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QLabel" name="label_Titan_2">
+         <widget class="QLabel" name="label_CapitalShip">
           <property name="text">
            <string>主力舰</string>
           </property>
@@ -345,14 +345,14 @@
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="comboBox_faction_2"/>
+         <widget class="QComboBox" name="comboBox_CapitalShip"/>
         </item>
        </layout>
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
-         <widget class="QLabel" name="label_Titan_3">
+         <widget class="QLabel" name="label_Levels">
           <property name="text">
            <string>等级</string>
           </property>
@@ -362,14 +362,14 @@
          </widget>
         </item>
         <item>
-         <widget class="QComboBox" name="comboBox_faction_3"/>
+         <widget class="QComboBox" name="comboBox_Levels"/>
         </item>
        </layout>
       </item>
       <item>
        <layout class="QGridLayout" name="gridLayout_2">
         <item row="0" column="0">
-         <widget class="QLabel" name="label_Titan_4">
+         <widget class="QLabel" name="label_NextExp">
           <property name="text">
            <string>下一级经验</string>
           </property>
@@ -379,14 +379,14 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QLineEdit" name="lineEdit_Titan_2">
+         <widget class="QLineEdit" name="lineEdit_NextExp">
           <property name="readOnly">
            <bool>false</bool>
           </property>
          </widget>
         </item>
         <item row="0" column="2">
-         <widget class="QLabel" name="label_Titan_12">
+         <widget class="QLabel" name="label_ArmorRestoreCooldown">
           <property name="text">
            <string>受伤后装甲恢复冷却时间</string>
           </property>
@@ -403,7 +403,7 @@
          </widget>
         </item>
         <item row="1" column="0">
-         <widget class="QLabel" name="label_Titan_5">
+         <widget class="QLabel" name="label_MaxHull">
           <property name="text">
            <string>最大船体</string>
           </property>
@@ -413,14 +413,14 @@
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QLineEdit" name="lineEdit_Titan_3">
+         <widget class="QLineEdit" name="lineEdit_MaxHull">
           <property name="readOnly">
            <bool>false</bool>
           </property>
          </widget>
         </item>
         <item row="1" column="2">
-         <widget class="QLabel" name="label_Titan_13">
+         <widget class="QLabel" name="label_ArmorRestoreScalar">
           <property name="text">
            <string>受伤后装甲恢复系数</string>
           </property>
@@ -437,7 +437,7 @@
          </widget>
         </item>
         <item row="2" column="0">
-         <widget class="QLabel" name="label_Titan_6">
+         <widget class="QLabel" name="label_HullRestoreRate">
           <property name="text">
            <string>船体恢复速率</string>
           </property>
@@ -454,7 +454,7 @@
          </widget>
         </item>
         <item row="2" column="2">
-         <widget class="QLabel" name="label_Titan_14">
+         <widget class="QLabel" name="label_ArmorStrength">
           <property name="text">
            <string>装甲强度</string>
           </property>
@@ -471,7 +471,7 @@
          </widget>
         </item>
         <item row="3" column="0">
-         <widget class="QLabel" name="label_Titan_7">
+         <widget class="QLabel" name="label_HullRestoreCooldown">
           <property name="text">
            <string>受伤后船体恢复冷却时间</string>
           </property>
@@ -488,7 +488,7 @@
          </widget>
         </item>
         <item row="3" column="2">
-         <widget class="QLabel" name="label_Titan_15">
+         <widget class="QLabel" name="label_MaxShield">
           <property name="text">
            <string>最大护盾点数</string>
           </property>
@@ -505,7 +505,7 @@
          </widget>
         </item>
         <item row="4" column="0">
-         <widget class="QLabel" name="label_Titan_8">
+         <widget class="QLabel" name="label_HullRestoreScalar">
           <property name="text">
            <string>受伤后船体恢复系数</string>
           </property>
@@ -522,7 +522,7 @@
          </widget>
         </item>
         <item row="4" column="2">
-         <widget class="QLabel" name="label_Titan_16">
+         <widget class="QLabel" name="label_ShieleRestoreRate">
           <property name="text">
            <string>护盾点恢复速度</string>
           </property>
@@ -539,7 +539,7 @@
          </widget>
         </item>
         <item row="5" column="0">
-         <widget class="QLabel" name="label_Titan_9">
+         <widget class="QLabel" name="label_CrippledPercentage">
           <property name="text">
            <string>船体破损百分比</string>
           </property>
@@ -556,7 +556,7 @@
          </widget>
         </item>
         <item row="5" column="2">
-         <widget class="QLabel" name="label_Titan_17">
+         <widget class="QLabel" name="label_ArmorRestoreCooldown_2">
           <property name="text">
            <string>受伤后护盾恢复冷却时间</string>
           </property>
@@ -573,7 +573,7 @@
          </widget>
         </item>
         <item row="6" column="0">
-         <widget class="QLabel" name="label_Titan_10">
+         <widget class="QLabel" name="label_MaxArmor">
           <property name="text">
            <string>最大装甲</string>
           </property>
@@ -590,7 +590,7 @@
          </widget>
         </item>
         <item row="6" column="2">
-         <widget class="QLabel" name="label_Titan_18">
+         <widget class="QLabel" name="label_ArmorRestoreScalar_2">
           <property name="text">
            <string>受伤后护盾恢复系数</string>
           </property>
@@ -607,7 +607,7 @@
          </widget>
         </item>
         <item row="7" column="0">
-         <widget class="QLabel" name="label_Titan_11">
+         <widget class="QLabel" name="label_ArmorRestoreRate">
           <property name="text">
            <string>装甲恢复速率</string>
           </property>
