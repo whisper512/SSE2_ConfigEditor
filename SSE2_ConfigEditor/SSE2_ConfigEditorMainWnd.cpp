@@ -92,6 +92,35 @@ void SSE2_ConfigEditorMainWnd::InitData()
     m_listAdventCapitalshipInfo[4].eCapitalship = Capitalship_siege;
 }
 
+void SSE2_ConfigEditorMainWnd::refreshCapitalshipCombox()
+{
+    ui.comboBox_CapitalShip->clear();
+    if (m_eFaction == Faction_AL || m_eFaction == Faction_AR)
+    {
+        ui.comboBox_CapitalShip->addItem("光辉");
+        ui.comboBox_CapitalShip->addItem("先祖");
+        ui.comboBox_CapitalShip->addItem("宁静");
+        ui.comboBox_CapitalShip->addItem("超度");
+        ui.comboBox_CapitalShip->addItem("天启");
+    }
+    else if (m_eFaction == Faction_TL || m_eFaction == Faction_TR)
+    {
+        ui.comboBox_CapitalShip->addItem("科尔");
+        ui.comboBox_CapitalShip->addItem("艾肯");
+        ui.comboBox_CapitalShip->addItem("瓦索");
+        ui.comboBox_CapitalShip->addItem("玛莎");
+        ui.comboBox_CapitalShip->addItem("杜诺夫");
+    }
+    else if (m_eFaction == Faction_VL || m_eFaction == Faction_VR)
+    {
+        ui.comboBox_CapitalShip->addItem("克尔图");
+        ui.comboBox_CapitalShip->addItem("加拉苏");
+        ui.comboBox_CapitalShip->addItem("基兰查");
+        ui.comboBox_CapitalShip->addItem("瓦诺克斯");
+        ui.comboBox_CapitalShip->addItem("安特可");
+    }
+}
+
 void SSE2_ConfigEditorMainWnd::ConnectSlots()
 {
     connect(ui.comboBox_faction, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SSE2_ConfigEditorMainWnd::OnFactionChanged);
@@ -239,7 +268,6 @@ void SSE2_ConfigEditorMainWnd::ParseMaxSupplyConfigFromJson(const QJsonDocument&
 void SSE2_ConfigEditorMainWnd::OnFactionChanged(int index)
 {
     m_eFaction = (eFaction)index;
-    ReadConfig();
     
     if (m_eFaction == Faction_VL || m_eFaction == Faction_VR)
     {
@@ -256,6 +284,9 @@ void SSE2_ConfigEditorMainWnd::OnFactionChanged(int index)
         ui.label_default_starting_credit->setVisible(true);
         ui.lineEdit_default_starting_credit->setVisible(true);
     }
+
+    refreshCapitalshipCombox();
+    ReadConfig();
 }
 
 void SSE2_ConfigEditorMainWnd::OnOpenGamePath()
@@ -273,6 +304,7 @@ void SSE2_ConfigEditorMainWnd::OnOpenGamePath()
         m_strGamePath = fileInfo.absolutePath();
     }
 
+    refreshCapitalshipCombox();
     ReadConfig();
 }
 
@@ -682,11 +714,6 @@ void SSE2_ConfigEditorMainWnd::IntiEditor()
     ui.comboBox_faction->addItem(tr("圣临忠诚派"));
     ui.comboBox_faction->addItem(tr("圣临反叛派"));
 
-    ui.comboBox_CapitalShip->addItem(tr("战斗主力舰"));
-    ui.comboBox_CapitalShip->addItem(tr("殖民主力舰"));
-    ui.comboBox_CapitalShip->addItem(tr("支援主力舰"));
-    ui.comboBox_CapitalShip->addItem(tr("航母主力舰"));
-    ui.comboBox_CapitalShip->addItem(tr("攻城主力舰"));
 
     ui.comboBox_Levels->addItem(tr("1"));
     ui.comboBox_Levels->addItem(tr("2"));
