@@ -73,23 +73,23 @@ void SSE2_ConfigEditorMainWnd::InitMenu()
 
 void SSE2_ConfigEditorMainWnd::InitData()
 {
-    m_listTradeCapitalshipInfo[0].eCapitalship = Capitalship_battle;
-    m_listTradeCapitalshipInfo[1].eCapitalship = Capitalship_colony;
-    m_listTradeCapitalshipInfo[2].eCapitalship = Capitalship_support;
-    m_listTradeCapitalshipInfo[3].eCapitalship = Capitalship_carrier;
-    m_listTradeCapitalshipInfo[4].eCapitalship = Capitalship_siege;
+    m_listTradeCapitalshipInfo[0].eCapitalship = Capitalship_A;
+    m_listTradeCapitalshipInfo[1].eCapitalship = Capitalship_B;
+    m_listTradeCapitalshipInfo[2].eCapitalship = Capitalship_C;
+    m_listTradeCapitalshipInfo[3].eCapitalship = Capitalship_D;
+    m_listTradeCapitalshipInfo[4].eCapitalship = Capitalship_E;
 
-    m_listVasariCapitalshipInfo[0].eCapitalship = Capitalship_battle;
-    m_listVasariCapitalshipInfo[1].eCapitalship = Capitalship_colony;
-    m_listVasariCapitalshipInfo[2].eCapitalship = Capitalship_support;
-    m_listVasariCapitalshipInfo[3].eCapitalship = Capitalship_carrier;
-    m_listVasariCapitalshipInfo[4].eCapitalship = Capitalship_siege;
+    m_listVasariCapitalshipInfo[0].eCapitalship = Capitalship_A;
+    m_listVasariCapitalshipInfo[1].eCapitalship = Capitalship_B;
+    m_listVasariCapitalshipInfo[2].eCapitalship = Capitalship_C;
+    m_listVasariCapitalshipInfo[3].eCapitalship = Capitalship_D;
+    m_listVasariCapitalshipInfo[4].eCapitalship = Capitalship_E;
 
-    m_listAdventCapitalshipInfo[0].eCapitalship = Capitalship_battle;
-    m_listAdventCapitalshipInfo[1].eCapitalship = Capitalship_colony;
-    m_listAdventCapitalshipInfo[2].eCapitalship = Capitalship_support;
-    m_listAdventCapitalshipInfo[3].eCapitalship = Capitalship_carrier;
-    m_listAdventCapitalshipInfo[4].eCapitalship = Capitalship_siege;
+    m_listAdventCapitalshipInfo[0].eCapitalship = Capitalship_A;
+    m_listAdventCapitalshipInfo[1].eCapitalship = Capitalship_B;
+    m_listAdventCapitalshipInfo[2].eCapitalship = Capitalship_C;
+    m_listAdventCapitalshipInfo[3].eCapitalship = Capitalship_D;
+    m_listAdventCapitalshipInfo[4].eCapitalship = Capitalship_E;
 }
 
 void SSE2_ConfigEditorMainWnd::refreshCapitalshipCombox()
@@ -129,6 +129,11 @@ void SSE2_ConfigEditorMainWnd::ConnectSlots()
     connect(ui.lineEdit_SuperCapitalship, &QLineEdit::editingFinished, this, &SSE2_ConfigEditorMainWnd::OnEditFinished);
     connect(ui.lineEdit_starStarbase, &QLineEdit::editingFinished, this, &SSE2_ConfigEditorMainWnd::OnEditFinished);
     connect(ui.lineEdit_planetStarbase, &QLineEdit::editingFinished, this, &SSE2_ConfigEditorMainWnd::OnEditFinished);
+
+    connect(ui.comboBox_CapitalShip, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SSE2_ConfigEditorMainWnd::OnCapitalshipTypeOrLevelChanged);
+    connect(ui.comboBox_Levels, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SSE2_ConfigEditorMainWnd::OnCapitalshipTypeOrLevelChanged);
+
+    
 }
 
 void SSE2_ConfigEditorMainWnd::ReadConfig()
@@ -138,26 +143,64 @@ void SSE2_ConfigEditorMainWnd::ReadConfig()
         return;
     }
 
+    // 阵营palyer配置文件
     QString strConfigFile;
+    // 主力舰配置文件
+    QString strCapitalshipAFile;
+    QString strCapitalshipBFile;
+    QString strCapitalshipCFile;
+    QString strCapitalshipDFile;
+    QString strCapitalshipEFile;
+
     switch (m_eFaction)
     {
     case Faction_TL:
         strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(TL_PlayerConfig);
+        strCapitalshipAFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Trader_BattleCaptialShip);
+        strCapitalshipBFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Trader_ColonyCaptialShip);
+        strCapitalshipCFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Trader_CarrierCaptialShip);
+        strCapitalshipDFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Trader_SiegeCaptialShip);
+        strCapitalshipEFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Trader_SupportCaptialShip);
         break;
     case Faction_TR:
         strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(TR_PlayerConfig);
+        strCapitalshipAFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Trader_BattleCaptialShip);
+        strCapitalshipBFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Trader_ColonyCaptialShip);
+        strCapitalshipCFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Trader_CarrierCaptialShip);
+        strCapitalshipDFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Trader_SiegeCaptialShip);
+        strCapitalshipEFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Trader_SupportCaptialShip);
         break;
     case Faction_VL:
         strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(VL_PlayerConfig);
+        strCapitalshipAFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Vasari_BattleCaptialShip);
+        strCapitalshipBFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Vasari_ColonyCaptialShip);
+        strCapitalshipCFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Vasari_CarrierCaptialShip);
+        strCapitalshipDFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Vasari_SiegeCaptialShip);
+        strCapitalshipEFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Vasari_MarauderCaptialShip);
         break;
     case Faction_VR:
         strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(VR_PlayerConfig);
+        strCapitalshipAFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Vasari_BattleCaptialShip);
+        strCapitalshipBFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Vasari_ColonyCaptialShip);
+        strCapitalshipCFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Vasari_CarrierCaptialShip);
+        strCapitalshipDFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Vasari_SiegeCaptialShip);
+        strCapitalshipEFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Vasari_MarauderCaptialShip);
         break;
     case Faction_AL:
         strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(AL_PlayerConfig);
+        strCapitalshipAFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Advent_BattleCaptialShip);
+        strCapitalshipBFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Advent_ColonyCaptialShip);
+        strCapitalshipCFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Advent_CarrierCaptialShip);
+        strCapitalshipDFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Advent_BattlePsionicCapitalShip);
+        strCapitalshipEFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Advent_PlanetPsionicCaptialShip);
         break;
     case Faction_AR:
         strConfigFile = QString("%1/entities/%2.player").arg(m_strGamePath).arg(AR_PlayerConfig);
+        strCapitalshipAFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Advent_BattleCaptialShip);
+        strCapitalshipBFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Advent_ColonyCaptialShip);
+        strCapitalshipCFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Advent_CarrierCaptialShip);
+        strCapitalshipDFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Advent_BattlePsionicCapitalShip);
+        strCapitalshipEFile = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Advent_PlanetPsionicCaptialShip);
         break;
     default:
         return;
@@ -172,12 +215,38 @@ void SSE2_ConfigEditorMainWnd::ReadConfig()
 
     QByteArray jsonData = file.readAll();
     file.close();
-
     QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData);
     
     ParseUnitLimitConfigFromJson(jsonDoc);
     ParseMaxSupplyConfigFromJson(jsonDoc);
     ParseDefaultStartingAssetsFromJson(jsonDoc);
+
+    QFile fileCapitalshipA(strCapitalshipAFile);
+    QFile fileCapitalshipB(strCapitalshipBFile);
+    QFile fileCapitalshipC(strCapitalshipCFile);
+    QFile fileCapitalshipD(strCapitalshipDFile);
+    QFile fileCapitalshipE(strCapitalshipEFile);
+
+    if (!fileCapitalshipA.open(QIODevice::ReadOnly) || !fileCapitalshipB.open(QIODevice::ReadOnly) ||
+        !fileCapitalshipC.open(QIODevice::ReadOnly) || !fileCapitalshipD.open(QIODevice::ReadOnly) || !fileCapitalshipE.open(QIODevice::ReadOnly))
+    {
+        qDebug() << "无法打开主力舰配置文件";
+        return;
+    }
+
+    QByteArray jsonDataCapitalshipA = fileCapitalshipA.readAll();
+    QByteArray jsonDataCapitalshipB = fileCapitalshipB.readAll();
+    QByteArray jsonDataCapitalshipC = fileCapitalshipC.readAll();
+    QByteArray jsonDataCapitalshipD = fileCapitalshipD.readAll();
+    QByteArray jsonDataCapitalshipE = fileCapitalshipE.readAll();
+    fileCapitalshipA.close();
+    fileCapitalshipB.close();
+    fileCapitalshipC.close();
+    fileCapitalshipD.close();
+    fileCapitalshipE.close();
+
+    ParseCapitalshipConfigFromJson(QJsonDocument::fromJson(jsonDataCapitalshipA), QJsonDocument::fromJson(jsonDataCapitalshipB),
+        QJsonDocument::fromJson(jsonDataCapitalshipC), QJsonDocument::fromJson(jsonDataCapitalshipD), QJsonDocument::fromJson(jsonDataCapitalshipE));
 
 }
 
@@ -265,6 +334,231 @@ void SSE2_ConfigEditorMainWnd::ParseMaxSupplyConfigFromJson(const QJsonDocument&
 }
 
 
+void SSE2_ConfigEditorMainWnd::ParseCapitalshipConfigFromJson(const QJsonDocument& jsonDocA, const QJsonDocument& jsonDocB, const QJsonDocument& jsonDocC, const QJsonDocument& jsonDocD, const QJsonDocument& jsonDocE)
+{
+    // 辅助 Lambda:解析单个主力舰文件的 health.levels 并填入 stuCapitalshipInfo
+    auto parseShipHealth = [&](const QJsonDocument& doc, stuCapitalshipInfo& info) {
+        if (doc.isNull() || !doc.isObject())
+            return;
+
+        QJsonObject root = doc.object();
+        QJsonObject healthObj = root.value("health").toObject();
+        if (healthObj.isEmpty())
+            return;
+
+        QJsonArray levels = healthObj.value("levels").toArray();
+        int count = qMin(levels.size(), 10); 
+
+        for (int i = 0; i < count; ++i)
+        {
+            QJsonObject lvl = levels[i].toObject();
+            stuCapitalshipLevelInfo& lvlInfo = info.LevelInfo[i];
+
+            lvlInfo.MaxHull = lvl.value("max_hull_points").toDouble();
+            lvlInfo.HullRestoreRate = lvl.value("hull_point_restore_rate").toDouble();
+            lvlInfo.HullRestoreCooldown = lvl.value("hull_point_restore_cooldown_duration_after_damage_taken").toDouble();
+            lvlInfo.HullRestoreScale = lvl.value("hull_point_restore_scalar_after_damage_taken").toDouble();
+            lvlInfo.HullCrippledPercentage = lvl.value("hull_crippled_percentage").toDouble();
+            lvlInfo.MaxArmor = lvl.value("max_armor_points").toDouble();
+            lvlInfo.ArmorRestoreRate = lvl.value("armor_point_restore_rate").toDouble();
+            lvlInfo.ArmorRestoreCooldown = lvl.value("armor_point_restore_cooldown_duration_after_damage_taken").toDouble();
+            lvlInfo.ArmorRestoreScale = lvl.value("armor_point_restore_scalar_after_damage_taken").toDouble();
+            lvlInfo.ArmorStrength = lvl.value("armor_strength").toDouble();
+            lvlInfo.MaxShield = lvl.value("max_shield_points").toDouble();
+            lvlInfo.ShieldRestoreRate = lvl.value("shield_point_restore_rate").toDouble();
+            lvlInfo.ShieldRestoreCooldown = lvl.value("shield_point_restore_cooldown_duration_after_damage_taken").toDouble();
+            lvlInfo.ShieldRestoreScale = lvl.value("shield_point_restore_scalar_after_damage_taken").toDouble();
+        }
+        };
+
+    // 根据当前阵营选择目标数组
+    stuCapitalshipInfo* targetArray = nullptr;
+    switch (m_eFaction)
+    {
+    case Faction_TL:
+    case Faction_TR:
+        targetArray = m_listTradeCapitalshipInfo;
+        break;
+    case Faction_VL:
+    case Faction_VR:
+        targetArray = m_listVasariCapitalshipInfo;
+        break;
+    case Faction_AL:
+    case Faction_AR:
+        targetArray = m_listAdventCapitalshipInfo;
+        break;
+    default:
+        return; // 无效阵营
+    }
+
+    parseShipHealth(jsonDocA, targetArray[0]);
+    parseShipHealth(jsonDocB, targetArray[1]);
+    parseShipHealth(jsonDocC, targetArray[2]);
+    parseShipHealth(jsonDocD, targetArray[3]); 
+    parseShipHealth(jsonDocE, targetArray[4]);
+    UpdateCapitalshipData();
+}
+
+void SSE2_ConfigEditorMainWnd::UpdateCapitalshipData()
+{
+    OnCapitalshipTypeOrLevelChanged();
+}
+
+void SSE2_ConfigEditorMainWnd::WriteCapitalshipConfigToJson()
+{
+    if (m_strGamePath.isEmpty())
+        return;
+
+    // ---------- 1. 先保存当前 UI 上显示的等级数据到结构体 ----------
+    {
+        // 获取当前阵营对应的主力舰数组（与 OnCapitalshipTypeOrLevelChanged 逻辑一致）
+        stuCapitalshipInfo* targetArray = nullptr;
+        switch (m_eFaction)
+        {
+        case Faction_TL: case Faction_TR: targetArray = m_listTradeCapitalshipInfo; break;
+        case Faction_VL: case Faction_VR: targetArray = m_listVasariCapitalshipInfo; break;
+        case Faction_AL: case Faction_AR: targetArray = m_listAdventCapitalshipInfo; break;
+        default: return;
+        }
+
+        int shipIndex = ui.comboBox_CapitalShip->currentIndex();
+        int levelIndex = ui.comboBox_Levels->currentIndex();
+        if (shipIndex >= 0 && shipIndex < 5 && levelIndex >= 0 && levelIndex < 10)
+        {
+            stuCapitalshipLevelInfo& lvlInfo = targetArray[shipIndex].LevelInfo[levelIndex];
+
+            lvlInfo.MaxHull = ui.lineEdit_MaxHull->text().toDouble();
+            lvlInfo.HullRestoreRate = ui.lineEdit_Titan_4->text().toDouble();
+            lvlInfo.HullRestoreCooldown = ui.lineEdit_Titan_5->text().toDouble();
+            lvlInfo.HullRestoreScale = ui.lineEdit_Titan_6->text().toDouble();
+            lvlInfo.HullCrippledPercentage = ui.lineEdit_Titan_7->text().toDouble();
+            lvlInfo.MaxArmor = ui.lineEdit_Titan_8->text().toDouble();
+            lvlInfo.ArmorRestoreRate = ui.lineEdit_Titan_9->text().toDouble();
+            lvlInfo.ArmorRestoreCooldown = ui.lineEdit_Titan_10->text().toDouble();
+            lvlInfo.ArmorRestoreScale = ui.lineEdit_Titan_11->text().toDouble();
+            lvlInfo.ArmorStrength = ui.lineEdit_Titan_12->text().toDouble();
+            lvlInfo.MaxShield = ui.lineEdit_Titan_13->text().toDouble();
+            lvlInfo.ShieldRestoreRate = ui.lineEdit_Titan_14->text().toDouble();
+            lvlInfo.ShieldRestoreCooldown = ui.lineEdit_Titan_15->text().toDouble();
+            lvlInfo.ShieldRestoreScale = ui.lineEdit_Titan_16->text().toDouble();
+        }
+    }
+
+    // ---------- 2. 构造五艘主力舰的 .unit 文件路径（与 ReadConfig 保持一致） ----------
+    QString strShipFiles[5];
+    switch (m_eFaction)
+    {
+    case Faction_TL:
+    case Faction_TR:
+        strShipFiles[0] = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Trader_BattleCaptialShip);
+        strShipFiles[1] = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Trader_ColonyCaptialShip);
+        strShipFiles[2] = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Trader_CarrierCaptialShip);
+        strShipFiles[3] = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Trader_SiegeCaptialShip);
+        strShipFiles[4] = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Trader_SupportCaptialShip);
+        break;
+    case Faction_VL:
+    case Faction_VR:
+        strShipFiles[0] = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Vasari_BattleCaptialShip);
+        strShipFiles[1] = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Vasari_ColonyCaptialShip);
+        strShipFiles[2] = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Vasari_CarrierCaptialShip);
+        strShipFiles[3] = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Vasari_SiegeCaptialShip);
+        strShipFiles[4] = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Vasari_MarauderCaptialShip);
+        break;
+    case Faction_AL:
+    case Faction_AR:
+        strShipFiles[0] = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Advent_BattleCaptialShip);
+        strShipFiles[1] = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Advent_ColonyCaptialShip);
+        strShipFiles[2] = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Advent_CarrierCaptialShip);
+        strShipFiles[3] = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Advent_BattlePsionicCapitalShip);
+        strShipFiles[4] = QString("%1/entities/%2.unit").arg(m_strGamePath).arg(Advent_PlanetPsionicCaptialShip);
+        break;
+    default:
+        return;
+    }
+
+    // 获取当前阵营的主力舰数据数组
+    stuCapitalshipInfo* targetArray = nullptr;
+    switch (m_eFaction)
+    {
+    case Faction_TL: case Faction_TR: targetArray = m_listTradeCapitalshipInfo; break;
+    case Faction_VL: case Faction_VR: targetArray = m_listVasariCapitalshipInfo; break;
+    case Faction_AL: case Faction_AR: targetArray = m_listAdventCapitalshipInfo; break;
+    default: return;
+    }
+
+    // ---------- 3. 逐个主力舰文件写入 ----------
+    for (int shipIndex = 0; shipIndex < 5; ++shipIndex)
+    {
+        const stuCapitalshipInfo& shipInfo = targetArray[shipIndex];
+        QFile file(strShipFiles[shipIndex]);
+        if (!file.open(QIODevice::ReadOnly))
+        {
+            qDebug() << "WriteCapitalshipConfigToJson: 无法打开文件" << strShipFiles[shipIndex];
+            continue;
+        }
+
+        QByteArray jsonData = file.readAll();
+        file.close();
+
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData);
+        if (jsonDoc.isNull() || !jsonDoc.isObject())
+        {
+            qDebug() << "WriteCapitalshipConfigToJson: JSON 格式错误" << strShipFiles[shipIndex];
+            continue;
+        }
+
+        QJsonObject rootObj = jsonDoc.object();
+        QJsonObject healthObj = rootObj.value("health").toObject();
+        if (healthObj.isEmpty())
+        {
+            qDebug() << "WriteCapitalshipConfigToJson: 未找到 health 字段" << strShipFiles[shipIndex];
+            continue;
+        }
+
+        QJsonArray levelsArray = healthObj.value("levels").toArray();
+        int levelCount = levelsArray.size();
+        int updateCount = qMin(levelCount, 10);   // 结构体最多10级
+
+        for (int levelIndex = 0; levelIndex < updateCount; ++levelIndex)
+        {
+            const stuCapitalshipLevelInfo& lvlInfo = shipInfo.LevelInfo[levelIndex];
+            QJsonObject levelObj = levelsArray[levelIndex].toObject();
+
+            // 仅更新我们管理的字段，其他字段（如 shield_burst_restore 等）保持不变
+            levelObj["max_hull_points"] = lvlInfo.MaxHull;
+            levelObj["hull_point_restore_rate"] = lvlInfo.HullRestoreRate;
+            levelObj["hull_point_restore_cooldown_duration_after_damage_taken"] = lvlInfo.HullRestoreCooldown;
+            levelObj["hull_point_restore_scalar_after_damage_taken"] = lvlInfo.HullRestoreScale;
+            levelObj["hull_crippled_percentage"] = lvlInfo.HullCrippledPercentage;
+            levelObj["max_armor_points"] = lvlInfo.MaxArmor;
+            levelObj["armor_point_restore_rate"] = lvlInfo.ArmorRestoreRate;
+            levelObj["armor_point_restore_cooldown_duration_after_damage_taken"] = lvlInfo.ArmorRestoreCooldown;
+            levelObj["armor_point_restore_scalar_after_damage_taken"] = lvlInfo.ArmorRestoreScale;
+            levelObj["armor_strength"] = lvlInfo.ArmorStrength;
+            levelObj["max_shield_points"] = lvlInfo.MaxShield;
+            levelObj["shield_point_restore_rate"] = lvlInfo.ShieldRestoreRate;
+            levelObj["shield_point_restore_cooldown_duration_after_damage_taken"] = lvlInfo.ShieldRestoreCooldown;
+            levelObj["shield_point_restore_scalar_after_damage_taken"] = lvlInfo.ShieldRestoreScale;
+
+            levelsArray[levelIndex] = levelObj;
+        }
+
+        // 如果原数组超过10级，保留多余部分不变；如果不足10级（理论上不会），不做补充
+        healthObj["levels"] = levelsArray;
+        rootObj["health"] = healthObj;
+        jsonDoc.setObject(rootObj);
+
+        // 写回文件（使用缩进保持与原文件相似的可读性）
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+        {
+            qDebug() << "WriteCapitalshipConfigToJson: 无法写入文件" << strShipFiles[shipIndex];
+            continue;
+        }
+        file.write(jsonDoc.toJson(QJsonDocument::Indented));
+        file.close();
+    }
+}
+
 void SSE2_ConfigEditorMainWnd::OnFactionChanged(int index)
 {
     m_eFaction = (eFaction)index;
@@ -321,13 +615,15 @@ void SSE2_ConfigEditorMainWnd::OnEditConfig()
     WriteMaxSupplyConfigToJson();
     // 写入默认起始资产配置
     WriteDefaultStartingAssetsToJson();
-
+    // 新增主力舰数据写入
+    WriteCapitalshipConfigToJson();
     QMessageBox::information(this, tr("提示"), tr("配置文件已成功修改！"));
 }
 
 void SSE2_ConfigEditorMainWnd::OnSaveBackup()
 {
 }
+
 
 void SSE2_ConfigEditorMainWnd::UpdateUnitsLimitData()
 {
@@ -602,7 +898,7 @@ void SSE2_ConfigEditorMainWnd::ParseDefaultStartingAssetsFromJson(const QJsonDoc
     m_iDefaultMetal = defaultStartingAssetsObj.value("metal").toInt(400);
     m_iDefaultCrystal = defaultStartingAssetsObj.value("crystal").toInt(250);
 
-    UpdateDefaultStartingAssetsData();
+    UpdateCapitalshipData();
 }
 
 void SSE2_ConfigEditorMainWnd::UpdateDefaultStartingAssetsData()
@@ -742,4 +1038,53 @@ void SSE2_ConfigEditorMainWnd::OnEditFinished()
 
     m_iDefaultMetal = ui.lineEdit_default_starting_metal->text().toInt();
     m_iDefaultCrystal = ui.lineEdit_default_starting_crystal->text().toInt();
+}
+
+void SSE2_ConfigEditorMainWnd::OnCapitalshipTypeOrLevelChanged()
+{
+    // 根据当前阵营选择对应的主力舰数组
+    stuCapitalshipInfo* targetArray = nullptr;
+    switch (m_eFaction)
+    {
+    case Faction_TL:
+    case Faction_TR:
+        targetArray = m_listTradeCapitalshipInfo;
+        break;
+    case Faction_VL:
+    case Faction_VR:
+        targetArray = m_listVasariCapitalshipInfo;
+        break;
+    case Faction_AL:
+    case Faction_AR:
+        targetArray = m_listAdventCapitalshipInfo;
+        break;
+    default:
+        return;
+    }
+
+    int shipIndex = ui.comboBox_CapitalShip->currentIndex();  // 0~4
+    int levelIndex = ui.comboBox_Levels->currentIndex();      // 0~9
+
+    if (shipIndex < 0 || shipIndex >= 5 || levelIndex < 0 || levelIndex >= 10)
+        return;
+
+    const stuCapitalshipLevelInfo& lvlInfo = targetArray[shipIndex].LevelInfo[levelIndex];
+
+    // 将结构体数据填充到对应的 UI 控件
+    ui.lineEdit_MaxHull->setText(QString::number(lvlInfo.MaxHull, 'f', 1));
+    ui.lineEdit_Titan_4->setText(QString::number(lvlInfo.HullRestoreRate, 'f', 1));
+    ui.lineEdit_Titan_5->setText(QString::number(lvlInfo.HullRestoreCooldown, 'f', 1));
+    ui.lineEdit_Titan_6->setText(QString::number(lvlInfo.HullRestoreScale, 'f', 1));
+    ui.lineEdit_Titan_7->setText(QString::number(lvlInfo.HullCrippledPercentage, 'f', 2));
+    ui.lineEdit_Titan_8->setText(QString::number(lvlInfo.MaxArmor, 'f', 1));
+    ui.lineEdit_Titan_9->setText(QString::number(lvlInfo.ArmorRestoreRate, 'f', 1));
+    ui.lineEdit_Titan_10->setText(QString::number(lvlInfo.ArmorRestoreCooldown, 'f', 1));
+    ui.lineEdit_Titan_11->setText(QString::number(lvlInfo.ArmorRestoreScale, 'f', 1));
+    ui.lineEdit_Titan_12->setText(QString::number(lvlInfo.ArmorStrength, 'f', 1));
+    ui.lineEdit_Titan_13->setText(QString::number(lvlInfo.MaxShield, 'f', 1));
+    ui.lineEdit_Titan_14->setText(QString::number(lvlInfo.ShieldRestoreRate, 'f', 1));
+    ui.lineEdit_Titan_15->setText(QString::number(lvlInfo.ShieldRestoreCooldown, 'f', 1));
+    ui.lineEdit_Titan_16->setText(QString::number(lvlInfo.ShieldRestoreScale, 'f', 1));
+
+    ui.lineEdit_NextExp->setText("0");   // 下一级经验暂未在结构体中存储，置0
 }

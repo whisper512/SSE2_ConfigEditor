@@ -26,7 +26,7 @@
 #define Trader_SiegeCaptialShip "Trader_siege_capital_ship" // 玛莎
 #define Trader_SupportCaptialShip "Trader_support_capital_ship" // 杜诺夫
 
-#define Vasari_BattleCaptialShip "vasari_capital_ship" // 克尔图
+#define Vasari_BattleCaptialShip "vasari_battle_capital_ship" // 克尔图
 #define Vasari_ColonyCaptialShip "vasari_colony_capital_ship" // 加拉苏
 #define Vasari_CarrierCaptialShip "vasari_carrier_capital_ship" // 基兰查
 #define Vasari_SiegeCaptialShip "vasari_siege_capital_ship" // 瓦诺克斯
@@ -157,7 +157,10 @@ private:
     void UpdateDefaultStartingAssetsData();
     void WriteDefaultStartingAssetsToJson();
 
-
+    // 主力舰相关
+    void ParseCapitalshipConfigFromJson(const QJsonDocument& jsonDocA, const QJsonDocument& jsonDocB, const QJsonDocument& jsonDocC, const QJsonDocument& jsonDocE, const QJsonDocument& jsonDocD);
+    void UpdateCapitalshipData();
+    void WriteCapitalshipConfigToJson();
 
     void OnFactionChanged(int index);
     void OnOpenGamePath();
@@ -166,6 +169,6 @@ private:
 
 private slots:
     void OnEditFinished();
-
+    void OnCapitalshipTypeOrLevelChanged();
 };
 
