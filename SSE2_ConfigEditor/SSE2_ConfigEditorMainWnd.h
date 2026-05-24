@@ -93,8 +93,8 @@ struct stuCapitalshipLevelInfo
 
 struct stuCapitalshipInfo
 {
-    eCapitalshipIndex eCapitalship;         //主力舰类型
-    stuCapitalshipLevelInfo LevelInfo[10];  //等级信息
+    eCapitalshipIndex eCapitalship;         // 主力舰类型
+    stuCapitalshipLevelInfo LevelInfo[10];  // 等级信息
 };
 
 
@@ -114,12 +114,12 @@ private:
     QAction *m_pActionWriteConfig;
     QAction *m_pActionSaveBackup;
     
-    QString m_strGamePath;       //游戏路径
-    eFaction m_eFaction;         //阵营
-    int m_iTitanNum;             //泰坦数量
-    int m_iSuperCapitalshipNum;  //超级主力舰数量
-    int m_istarStarbase;         //恒星星际基地数量
-    int m_iplanetStarbase;       //行星星际基地数量
+    QString m_strGamePath;       // 游戏路径
+    eFaction m_eFaction;         // 阵营
+    int m_iTitanNum;             // 泰坦数量
+    int m_iSuperCapitalshipNum;  // 超级主力舰数量
+    int m_istarStarbase;         // 恒星星际基地数量
+    int m_iplanetStarbase;       // 行星星际基地数量
     QList<int> m_listMaxSupply;  // 存储各级max_supply值
     int m_iDefaultCredits;       // 默认起始信用点
     int m_iDefaultMetal;         // 默认起始金属
