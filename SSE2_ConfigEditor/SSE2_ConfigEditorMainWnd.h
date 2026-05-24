@@ -113,6 +113,8 @@ private:
     QAction *m_pActionOpenGamePath;
     QAction *m_pActionWriteConfig;
     QAction *m_pActionSaveBackup;
+
+    QAction* m_pActionTip;
     
     QString m_strGamePath;       // 游戏路径
     eFaction m_eFaction;         // 阵营
@@ -166,6 +168,7 @@ private:
     void OnOpenGamePath();
     void OnEditConfig();
     void OnSaveBackup();
+    void OnTip();
 
 private slots:
     void OnEditFinished();

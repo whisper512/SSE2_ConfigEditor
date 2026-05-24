@@ -66,6 +66,9 @@ void SSE2_ConfigEditorMainWnd::InitMenu()
     connect(m_pActionSaveBackup, &QAction::triggered, this, &SSE2_ConfigEditorMainWnd::OnSaveBackup);
     ui.menu_File->addAction(m_pActionSaveBackup);
 
+    m_pActionTip = new QAction(tr("提示"), this);
+    connect(m_pActionTip, &QAction::triggered, this, &SSE2_ConfigEditorMainWnd::OnTip);
+    ui.menu_Help->addAction(m_pActionTip);
 
     ui.label_Maxsupply6->setVisible(false);
     ui.lineEdit_Maxsupply6->setVisible(false);
@@ -622,6 +625,11 @@ void SSE2_ConfigEditorMainWnd::OnEditConfig()
 
 void SSE2_ConfigEditorMainWnd::OnSaveBackup()
 {
+}
+
+void SSE2_ConfigEditorMainWnd::OnTip()
+{
+    QMessageBox::information(this, tr("提示"), tr("注意在完成修改切换下拉框前写入配置"));
 }
 
 
