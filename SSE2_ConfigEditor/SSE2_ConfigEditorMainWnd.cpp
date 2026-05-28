@@ -435,18 +435,18 @@ void SSE2_ConfigEditorMainWnd::WriteCapitalshipConfigToJson()
             stuCapitalshipLevelInfo& lvlInfo = targetArray[shipIndex].LevelInfo[levelIndex];
 
             lvlInfo.MaxHull = ui.lineEdit_MaxHull->text().toDouble();
-            lvlInfo.HullRestoreRate = ui.lineEdit_Titan_4->text().toDouble();
-            lvlInfo.HullRestoreCooldown = ui.lineEdit_Titan_5->text().toDouble();
-            lvlInfo.HullRestoreScale = ui.lineEdit_Titan_6->text().toDouble();
-            lvlInfo.HullCrippledPercentage = ui.lineEdit_Titan_7->text().toDouble();
-            lvlInfo.MaxArmor = ui.lineEdit_Titan_8->text().toDouble();
-            lvlInfo.ArmorRestoreRate = ui.lineEdit_Titan_9->text().toDouble();
-            lvlInfo.ArmorRestoreCooldown = ui.lineEdit_Titan_10->text().toDouble();
-            lvlInfo.ArmorRestoreScale = ui.lineEdit_Titan_11->text().toDouble();
-            lvlInfo.ArmorStrength = ui.lineEdit_Titan_12->text().toDouble();
-            lvlInfo.MaxShield = ui.lineEdit_Titan_13->text().toDouble();
-            lvlInfo.ShieldRestoreRate = ui.lineEdit_Titan_14->text().toDouble();
-            lvlInfo.ShieldRestoreCooldown = ui.lineEdit_Titan_15->text().toDouble();
+            lvlInfo.HullRestoreRate = ui.lineEdit_HullRestoreRate->text().toDouble();
+            lvlInfo.HullRestoreCooldown = ui.lineEdit_HullRestoreCooldown->text().toDouble();
+            lvlInfo.HullRestoreScale = ui.lineEdit_HullRestoreScalar->text().toDouble();
+            lvlInfo.HullCrippledPercentage = ui.lineEdit_CrippledPercentage->text().toDouble();
+            lvlInfo.MaxArmor = ui.lineEdit_MaxArmor->text().toDouble();
+            lvlInfo.ArmorRestoreRate = ui.lineEdit_ArmorRestoreRate->text().toDouble();
+            lvlInfo.ArmorRestoreCooldown = ui.lineEdit_ArmorRestoreCooldown->text().toDouble();
+            lvlInfo.ArmorRestoreScale = ui.lineEdit_ArmorRestoreScalar->text().toDouble();
+            lvlInfo.ArmorStrength = ui.lineEdit_ArmorStrength->text().toDouble();
+            lvlInfo.MaxShield = ui.lineEdit_MaxShield->text().toDouble();
+            lvlInfo.ShieldRestoreRate = ui.lineEdit_ShieleRestoreRate->text().toDouble();
+            lvlInfo.ShieldRestoreCooldown = ui.lineEdit_ShieldRestoreCooldown->text().toDouble();
             lvlInfo.ShieldRestoreScale = ui.lineEdit_Titan_16->text().toDouble();
         }
     }
@@ -1075,19 +1075,19 @@ void SSE2_ConfigEditorMainWnd::OnCapitalshipTypeOrLevelChanged()
         stuCapitalshipLevelInfo& oldLvl = targetArray[m_iCurrentShipIndex].LevelInfo[m_iCurrentLevelIndex];
 
         oldLvl.MaxHull = ui.lineEdit_MaxHull->text().toDouble();
-        oldLvl.HullRestoreRate = ui.lineEdit_Titan_4->text().toDouble();
-        oldLvl.HullRestoreCooldown = ui.lineEdit_Titan_5->text().toDouble();
-        oldLvl.HullRestoreScale = ui.lineEdit_Titan_6->text().toDouble();
-        oldLvl.HullCrippledPercentage = ui.lineEdit_Titan_7->text().toDouble();
-        oldLvl.MaxArmor = ui.lineEdit_Titan_8->text().toDouble();
-        oldLvl.ArmorRestoreRate = ui.lineEdit_Titan_9->text().toDouble();
-        oldLvl.ArmorRestoreCooldown = ui.lineEdit_Titan_10->text().toDouble();
-        oldLvl.ArmorRestoreScale = ui.lineEdit_Titan_11->text().toDouble();
-        oldLvl.ArmorStrength = ui.lineEdit_Titan_12->text().toDouble();
-        oldLvl.MaxShield = ui.lineEdit_Titan_13->text().toDouble();
-        oldLvl.ShieldRestoreRate = ui.lineEdit_Titan_14->text().toDouble();
-        oldLvl.ShieldRestoreCooldown = ui.lineEdit_Titan_15->text().toDouble();
-        oldLvl.ShieldRestoreScale = ui.lineEdit_Titan_16->text().toDouble();
+        oldLvl.HullRestoreRate = ui.lineEdit_HullRestoreRate->text().toDouble();
+        oldLvl.HullRestoreCooldown = ui.lineEdit_HullRestoreCooldown->text().toDouble();
+        oldLvl.HullRestoreScale = ui.lineEdit_HullRestoreScalar->text().toDouble();
+        oldLvl.HullCrippledPercentage = ui.lineEdit_CrippledPercentage->text().toDouble();
+        oldLvl.MaxArmor = ui.lineEdit_MaxArmor->text().toDouble();
+        oldLvl.ArmorRestoreRate = ui.lineEdit_ArmorRestoreRate->text().toDouble();
+        oldLvl.ArmorRestoreCooldown = ui.lineEdit_ArmorRestoreCooldown->text().toDouble();
+        oldLvl.ArmorRestoreScale = ui.lineEdit_ArmorRestoreScalar->text().toDouble();
+        oldLvl.ArmorStrength = ui.lineEdit_ArmorStrength->text().toDouble();
+        oldLvl.MaxShield = ui.lineEdit_MaxShield->text().toDouble();
+        oldLvl.ShieldRestoreRate = ui.lineEdit_ShieleRestoreRate->text().toDouble();
+        oldLvl.ShieldRestoreCooldown = ui.lineEdit_ShieldRestoreCooldown->text().toDouble();
+        oldLvl.ShieldRestoreScale = ui.lineEdit_Titan_16->text().toDouble(); // 若已改名请换为 lineEdit_ShieldRestoreScalar
     }
 
     // 3. 获取新索引
@@ -1101,19 +1101,19 @@ void SSE2_ConfigEditorMainWnd::OnCapitalshipTypeOrLevelChanged()
     const stuCapitalshipLevelInfo& lvlInfo = targetArray[shipIndex].LevelInfo[levelIndex];
 
     ui.lineEdit_MaxHull->setText(QString::number(lvlInfo.MaxHull, 'f', 1));
-    ui.lineEdit_Titan_4->setText(QString::number(lvlInfo.HullRestoreRate, 'f', 1));
-    ui.lineEdit_Titan_5->setText(QString::number(lvlInfo.HullRestoreCooldown, 'f', 1));
-    ui.lineEdit_Titan_6->setText(QString::number(lvlInfo.HullRestoreScale, 'f', 1));
-    ui.lineEdit_Titan_7->setText(QString::number(lvlInfo.HullCrippledPercentage, 'f', 2));
-    ui.lineEdit_Titan_8->setText(QString::number(lvlInfo.MaxArmor, 'f', 1));
-    ui.lineEdit_Titan_9->setText(QString::number(lvlInfo.ArmorRestoreRate, 'f', 1));
-    ui.lineEdit_Titan_10->setText(QString::number(lvlInfo.ArmorRestoreCooldown, 'f', 1));
-    ui.lineEdit_Titan_11->setText(QString::number(lvlInfo.ArmorRestoreScale, 'f', 1));
-    ui.lineEdit_Titan_12->setText(QString::number(lvlInfo.ArmorStrength, 'f', 1));
-    ui.lineEdit_Titan_13->setText(QString::number(lvlInfo.MaxShield, 'f', 1));
-    ui.lineEdit_Titan_14->setText(QString::number(lvlInfo.ShieldRestoreRate, 'f', 1));
-    ui.lineEdit_Titan_15->setText(QString::number(lvlInfo.ShieldRestoreCooldown, 'f', 1));
-    ui.lineEdit_Titan_16->setText(QString::number(lvlInfo.ShieldRestoreScale, 'f', 1));
+    ui.lineEdit_HullRestoreRate->setText(QString::number(lvlInfo.HullRestoreRate, 'f', 1));
+    ui.lineEdit_HullRestoreCooldown->setText(QString::number(lvlInfo.HullRestoreCooldown, 'f', 1));
+    ui.lineEdit_HullRestoreScalar->setText(QString::number(lvlInfo.HullRestoreScale, 'f', 1));
+    ui.lineEdit_CrippledPercentage->setText(QString::number(lvlInfo.HullCrippledPercentage, 'f', 2));
+    ui.lineEdit_MaxArmor->setText(QString::number(lvlInfo.MaxArmor, 'f', 1));
+    ui.lineEdit_ArmorRestoreRate->setText(QString::number(lvlInfo.ArmorRestoreRate, 'f', 1));
+    ui.lineEdit_ArmorRestoreCooldown->setText(QString::number(lvlInfo.ArmorRestoreCooldown, 'f', 1));
+    ui.lineEdit_ArmorRestoreScalar->setText(QString::number(lvlInfo.ArmorRestoreScale, 'f', 1));
+    ui.lineEdit_ArmorStrength->setText(QString::number(lvlInfo.ArmorStrength, 'f', 1));
+    ui.lineEdit_MaxShield->setText(QString::number(lvlInfo.MaxShield, 'f', 1));
+    ui.lineEdit_ShieleRestoreRate->setText(QString::number(lvlInfo.ShieldRestoreRate, 'f', 1));
+    ui.lineEdit_ShieldRestoreCooldown->setText(QString::number(lvlInfo.ShieldRestoreCooldown, 'f', 1));
+    ui.lineEdit_Titan_16->setText(QString::number(lvlInfo.ShieldRestoreScale, 'f', 1)); // 同上
 
     ui.lineEdit_NextExp->setText("0");
 
