@@ -914,7 +914,7 @@ void SSE2_ConfigEditorMainWnd::ParseDefaultStartingAssetsFromJson(const QJsonDoc
     m_iDefaultMetal = defaultStartingAssetsObj.value("metal").toInt(400);
     m_iDefaultCrystal = defaultStartingAssetsObj.value("crystal").toInt(250);
 
-    UpdateCapitalshipData();
+    UpdateDefaultStartingAssetsData();
 }
 
 void SSE2_ConfigEditorMainWnd::UpdateDefaultStartingAssetsData()
