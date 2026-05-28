@@ -23,7 +23,7 @@ SSE2_ConfigEditorMainWnd::SSE2_ConfigEditorMainWnd(QWidget* parent)
 
 {
     ui.setupUi(this);
-
+    setFixedSize(this->width(), this->height());
     InitApplication();
 }
 
