@@ -130,6 +130,8 @@ private:
     stuCapitalshipInfo m_listTradeCapitalshipInfo[5];  //T族主力舰
     stuCapitalshipInfo m_listVasariCapitalshipInfo[5];  //V族主力舰
     stuCapitalshipInfo m_listAdventCapitalshipInfo[5];  //A族主力舰
+    int m_iCurrentShipIndex;    // 当前主力舰索引 (0~4)
+    int m_iCurrentLevelIndex;   // 当前等级索引 (0~9)
 
 
 private:
@@ -164,7 +166,7 @@ private:
     void UpdateCapitalshipData();
     void WriteCapitalshipConfigToJson();
 
-    void OnFactionChanged(int index);
+
     void OnOpenGamePath();
     void OnEditConfig();
     void OnSaveBackup();
@@ -173,5 +175,6 @@ private:
 private slots:
     void OnEditFinished();
     void OnCapitalshipTypeOrLevelChanged();
+    void OnFactionChanged(int index);
 };
 

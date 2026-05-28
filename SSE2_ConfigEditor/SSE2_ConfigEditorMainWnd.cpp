@@ -17,7 +17,9 @@ SSE2_ConfigEditorMainWnd::SSE2_ConfigEditorMainWnd(QWidget* parent)
     m_iplanetStarbase(1),
     m_iDefaultCredits(1000),
     m_iDefaultMetal(400),
-    m_iDefaultCrystal(250)
+    m_iDefaultCrystal(250),
+    m_iCurrentShipIndex(-1),
+    m_iCurrentLevelIndex(-1)
 
 {
     ui.setupUi(this);
@@ -404,6 +406,8 @@ void SSE2_ConfigEditorMainWnd::ParseCapitalshipConfigFromJson(const QJsonDocumen
 
 void SSE2_ConfigEditorMainWnd::UpdateCapitalshipData()
 {
+    m_iCurrentShipIndex = -1;
+    m_iCurrentLevelIndex = -1;
     OnCapitalshipTypeOrLevelChanged();
 }
 
@@ -564,6 +568,10 @@ void SSE2_ConfigEditorMainWnd::WriteCapitalshipConfigToJson()
 
 void SSE2_ConfigEditorMainWnd::OnFactionChanged(int index)
 {
+    m_eFaction = (eFaction)index;
+    // 重置暂存索引，避免跨阵营保存
+    m_iCurrentShipIndex = -1;
+    m_iCurrentLevelIndex = -1;
     m_eFaction = (eFaction)index;
     
     if (m_eFaction == Faction_VL || m_eFaction == Faction_VR)
@@ -1050,35 +1058,48 @@ void SSE2_ConfigEditorMainWnd::OnEditFinished()
 
 void SSE2_ConfigEditorMainWnd::OnCapitalshipTypeOrLevelChanged()
 {
-    // 根据当前阵营选择对应的主力舰数组
+    // 1. 获取当前阵营对应的主力舰数组
     stuCapitalshipInfo* targetArray = nullptr;
     switch (m_eFaction)
     {
-    case Faction_TL:
-    case Faction_TR:
-        targetArray = m_listTradeCapitalshipInfo;
-        break;
-    case Faction_VL:
-    case Faction_VR:
-        targetArray = m_listVasariCapitalshipInfo;
-        break;
-    case Faction_AL:
-    case Faction_AR:
-        targetArray = m_listAdventCapitalshipInfo;
-        break;
-    default:
-        return;
+    case Faction_TL: case Faction_TR: targetArray = m_listTradeCapitalshipInfo; break;
+    case Faction_VL: case Faction_VR: targetArray = m_listVasariCapitalshipInfo; break;
+    case Faction_AL: case Faction_AR: targetArray = m_listAdventCapitalshipInfo; break;
+    default: return;
     }
 
-    int shipIndex = ui.comboBox_CapitalShip->currentIndex();  // 0~4
-    int levelIndex = ui.comboBox_Levels->currentIndex();      // 0~9
+    // 2. 保存旧等级的数据（如果有效）
+    if (m_iCurrentShipIndex >= 0 && m_iCurrentShipIndex < 5 &&
+        m_iCurrentLevelIndex >= 0 && m_iCurrentLevelIndex < 10)
+    {
+        stuCapitalshipLevelInfo& oldLvl = targetArray[m_iCurrentShipIndex].LevelInfo[m_iCurrentLevelIndex];
+
+        oldLvl.MaxHull = ui.lineEdit_MaxHull->text().toDouble();
+        oldLvl.HullRestoreRate = ui.lineEdit_Titan_4->text().toDouble();
+        oldLvl.HullRestoreCooldown = ui.lineEdit_Titan_5->text().toDouble();
+        oldLvl.HullRestoreScale = ui.lineEdit_Titan_6->text().toDouble();
+        oldLvl.HullCrippledPercentage = ui.lineEdit_Titan_7->text().toDouble();
+        oldLvl.MaxArmor = ui.lineEdit_Titan_8->text().toDouble();
+        oldLvl.ArmorRestoreRate = ui.lineEdit_Titan_9->text().toDouble();
+        oldLvl.ArmorRestoreCooldown = ui.lineEdit_Titan_10->text().toDouble();
+        oldLvl.ArmorRestoreScale = ui.lineEdit_Titan_11->text().toDouble();
+        oldLvl.ArmorStrength = ui.lineEdit_Titan_12->text().toDouble();
+        oldLvl.MaxShield = ui.lineEdit_Titan_13->text().toDouble();
+        oldLvl.ShieldRestoreRate = ui.lineEdit_Titan_14->text().toDouble();
+        oldLvl.ShieldRestoreCooldown = ui.lineEdit_Titan_15->text().toDouble();
+        oldLvl.ShieldRestoreScale = ui.lineEdit_Titan_16->text().toDouble();
+    }
+
+    // 3. 获取新索引
+    int shipIndex = ui.comboBox_CapitalShip->currentIndex();
+    int levelIndex = ui.comboBox_Levels->currentIndex();
 
     if (shipIndex < 0 || shipIndex >= 5 || levelIndex < 0 || levelIndex >= 10)
         return;
 
+    // 4. 加载新数据到界面
     const stuCapitalshipLevelInfo& lvlInfo = targetArray[shipIndex].LevelInfo[levelIndex];
 
-    // 将结构体数据填充到对应的 UI 控件
     ui.lineEdit_MaxHull->setText(QString::number(lvlInfo.MaxHull, 'f', 1));
     ui.lineEdit_Titan_4->setText(QString::number(lvlInfo.HullRestoreRate, 'f', 1));
     ui.lineEdit_Titan_5->setText(QString::number(lvlInfo.HullRestoreCooldown, 'f', 1));
@@ -1094,5 +1115,9 @@ void SSE2_ConfigEditorMainWnd::OnCapitalshipTypeOrLevelChanged()
     ui.lineEdit_Titan_15->setText(QString::number(lvlInfo.ShieldRestoreCooldown, 'f', 1));
     ui.lineEdit_Titan_16->setText(QString::number(lvlInfo.ShieldRestoreScale, 'f', 1));
 
-    ui.lineEdit_NextExp->setText("0");   // 下一级经验暂未在结构体中存储，置0
+    ui.lineEdit_NextExp->setText("0");
+
+    // 5. 更新记录的当前索引
+    m_iCurrentShipIndex = shipIndex;
+    m_iCurrentLevelIndex = levelIndex;
 }
