@@ -151,4 +151,123 @@ struct FactionData
 // 生成 6 个阵营的默认配置（不含 JSON 数据，仅文件名/显示名等）
 // 实现放在对应的 .cpp 文件中
 // ============================================
-QMap<eFaction, FactionData> CreateDefaultFactionConfigs();
+inline QMap<eFaction, FactionData> CreateDefaultFactionConfigs()
+{
+    QMap<eFaction, FactionData> map;
+
+    // T 族忠诚派
+    {
+        FactionData d;
+        d.faction = Faction_TL;
+        d.displayName = QStringLiteral("贸易联盟忠诚派");
+        d.playerFileName = TL_PlayerConfig;
+        d.capitalShipFileNames = QStringList{
+            Trader_BattleCaptialShip,
+            Trader_ColonyCaptialShip,
+            Trader_CarrierCaptialShip,
+            Trader_SiegeCaptialShip,
+            Trader_SupportCaptialShip
+        };
+        d.capitalShipDisplayNames = QStringList{ "科尔", "艾肯", "瓦索", "玛莎", "杜诺夫" };
+        d.startingAssets.hasCredits = true;
+        d.maxSupplyLevels.resize(6);
+        map.insert(Faction_TL, d);
+    }
+
+    // T 族反叛派
+    {
+        FactionData d;
+        d.faction = Faction_TR;
+        d.displayName = QStringLiteral("贸易联盟反叛派");
+        d.playerFileName = TR_PlayerConfig;
+        d.capitalShipFileNames = QStringList{
+            Trader_BattleCaptialShip,
+            Trader_ColonyCaptialShip,
+            Trader_CarrierCaptialShip,
+            Trader_SiegeCaptialShip,
+            Trader_SupportCaptialShip
+        };
+        d.capitalShipDisplayNames = QStringList{ "科尔", "艾肯", "瓦索", "玛莎", "杜诺夫" };
+        d.startingAssets.hasCredits = true;
+        d.maxSupplyLevels.resize(6);
+        map.insert(Faction_TR, d);
+    }
+
+    // V 族忠诚派
+    {
+        FactionData d;
+        d.faction = Faction_VL;
+        d.displayName = QStringLiteral("瓦萨里忠诚派");
+        d.playerFileName = VL_PlayerConfig;
+        d.capitalShipFileNames = QStringList{
+            Vasari_BattleCaptialShip,
+            Vasari_ColonyCaptialShip,
+            Vasari_CarrierCaptialShip,
+            Vasari_SiegeCaptialShip,
+            Vasari_MarauderCaptialShip
+        };
+        d.capitalShipDisplayNames = QStringList{ "克尔图", "加拉苏", "基兰查", "瓦诺克斯", "安特可" };
+        d.startingAssets.hasCredits = false;
+        d.maxSupplyLevels.resize(7);
+        map.insert(Faction_VL, d);
+    }
+
+    // V 族反叛派
+    {
+        FactionData d;
+        d.faction = Faction_VR;
+        d.displayName = QStringLiteral("瓦萨里反叛派");
+        d.playerFileName = VR_PlayerConfig;
+        d.capitalShipFileNames = QStringList{
+            Vasari_BattleCaptialShip,
+            Vasari_ColonyCaptialShip,
+            Vasari_CarrierCaptialShip,
+            Vasari_SiegeCaptialShip,
+            Vasari_MarauderCaptialShip
+        };
+        d.capitalShipDisplayNames = QStringList{ "克尔图", "加拉苏", "基兰查", "瓦诺克斯", "安特可" };
+        d.startingAssets.hasCredits = false;
+        d.maxSupplyLevels.resize(7);
+        map.insert(Faction_VR, d);
+    }
+
+    // A 族忠诚派
+    {
+        FactionData d;
+        d.faction = Faction_AL;
+        d.displayName = QStringLiteral("圣临忠诚派");
+        d.playerFileName = AL_PlayerConfig;
+        d.capitalShipFileNames = QStringList{
+            Advent_BattleCaptialShip,
+            Advent_ColonyCaptialShip,
+            Advent_CarrierCaptialShip,
+            Advent_BattlePsionicCapitalShip,
+            Advent_PlanetPsionicCaptialShip
+        };
+        d.capitalShipDisplayNames = QStringList{ "光辉", "先祖", "宁静", "超度", "天启" };
+        d.startingAssets.hasCredits = true;
+        d.maxSupplyLevels.resize(6);
+        map.insert(Faction_AL, d);
+    }
+
+    // A 族反叛派
+    {
+        FactionData d;
+        d.faction = Faction_AR;
+        d.displayName = QStringLiteral("圣临反叛派");
+        d.playerFileName = AR_PlayerConfig;
+        d.capitalShipFileNames = QStringList{
+            Advent_BattleCaptialShip,
+            Advent_ColonyCaptialShip,
+            Advent_CarrierCaptialShip,
+            Advent_BattlePsionicCapitalShip,
+            Advent_PlanetPsionicCaptialShip
+        };
+        d.capitalShipDisplayNames = QStringList{ "光辉", "先祖", "宁静", "超度", "天启" };
+        d.startingAssets.hasCredits = true;
+        d.maxSupplyLevels.resize(6);
+        map.insert(Faction_AR, d);
+    }
+
+    return map;
+}
