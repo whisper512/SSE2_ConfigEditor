@@ -606,7 +606,7 @@
          </widget>
         </item>
         <item row="6" column="3">
-         <widget class="QLineEdit" name="lineEdit_Titan_16">
+         <widget class="QLineEdit" name="lineEdit_ShieldRestoreScalar">
           <property name="readOnly">
            <bool>false</bool>
           </property>

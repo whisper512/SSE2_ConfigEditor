@@ -81,6 +81,7 @@ struct stuCapitalshipLevelInfo
     double ShieldRestoreRate = 0.0;
     double ShieldRestoreCooldown = 0.0;
     double ShieldRestoreScale = 0.0;
+    double ExperienceToNextLevel = 0.0;
 };
 
 // ============================================

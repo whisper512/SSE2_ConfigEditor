@@ -64,6 +64,11 @@ private:
     void UpdateCapitalshipData();
     void WriteCapitalshipConfigToJson();
 
+    // 主力舰经验值
+    void ParseCapitalshipExperienceFromJson(const QJsonDocument& jsonDocA, const QJsonDocument& jsonDocB,
+        const QJsonDocument& jsonDocC, const QJsonDocument& jsonDocD, const QJsonDocument& jsonDocE);
+    void WriteCapitalshipExperienceToJson();
+
     void OnOpenGamePath();
     void OnEditConfig();
     void OnSaveBackup();

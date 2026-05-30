@@ -150,6 +150,9 @@ void SSE2_ConfigEditorMainWnd::ReadConfig()
     {
         ParseCapitalshipConfigFromJson(shipDocs[0], shipDocs[1], shipDocs[2],
             shipDocs[3], shipDocs[4]);
+
+        ParseCapitalshipExperienceFromJson(shipDocs[0], shipDocs[1], shipDocs[2],
+            shipDocs[3], shipDocs[4]);
     }
 }
 
@@ -297,7 +300,7 @@ void SSE2_ConfigEditorMainWnd::WriteCapitalshipConfigToJson()
         li.MaxShield = ui.lineEdit_MaxShield->text().toDouble();
         li.ShieldRestoreRate = ui.lineEdit_ShieleRestoreRate->text().toDouble();
         li.ShieldRestoreCooldown = ui.lineEdit_ShieldRestoreCooldown->text().toDouble();
-        li.ShieldRestoreScale = ui.lineEdit_Titan_16->text().toDouble();
+        li.ShieldRestoreScale = ui.lineEdit_ShieldRestoreScalar->text().toDouble();
     }
 
     // 2. 写入 5 个文件
@@ -357,6 +360,97 @@ void SSE2_ConfigEditorMainWnd::WriteCapitalshipConfigToJson()
     }
 }
 
+void SSE2_ConfigEditorMainWnd::ParseCapitalshipExperienceFromJson(
+    const QJsonDocument& jsonDocA, const QJsonDocument& jsonDocB,
+    const QJsonDocument& jsonDocC, const QJsonDocument& jsonDocD,
+    const QJsonDocument& jsonDocE)
+{
+    if (!m_pCurrentFactionData)
+        return;
+
+    auto parseShipExp = [&](const QJsonDocument& doc, stuCapitalshipInfo& info)
+        {
+            if (doc.isNull() || !doc.isObject())
+                return;
+
+            QJsonObject root = doc.object();
+            QJsonObject levelsContainer = root.value("levels").toObject();   // 顶层 "levels"
+            if (levelsContainer.isEmpty())
+                return;
+
+            QJsonArray levels = levelsContainer.value("levels").toArray();   // 内部的 "levels" 数组
+            int count = qMin(levels.size(), 10);
+            for (int i = 0; i < count; ++i)
+            {
+                QJsonObject lvl = levels[i].toObject();
+                info.LevelInfo[i].ExperienceToNextLevel = lvl.value("experience_to_next_level").toDouble();
+            }
+        };
+
+    QVector<stuCapitalshipInfo>& ships = m_pCurrentFactionData->capitalShips;
+    parseShipExp(jsonDocA, ships[0]);
+    parseShipExp(jsonDocB, ships[1]);
+    parseShipExp(jsonDocC, ships[2]);
+    parseShipExp(jsonDocD, ships[3]);
+    parseShipExp(jsonDocE, ships[4]);
+}
+
+void SSE2_ConfigEditorMainWnd::WriteCapitalshipExperienceToJson()
+{
+    if (m_strGamePath.isEmpty() || !m_pCurrentFactionData)
+        return;
+
+    FactionData& faction = *m_pCurrentFactionData;
+
+    // 1. 先将当前 UI 显示的经验值保存到内存结构体
+    int shipIndex = ui.comboBox_CapitalShip->currentIndex();
+    int levelIndex = ui.comboBox_Levels->currentIndex();
+    if (shipIndex >= 0 && shipIndex < 5 && levelIndex >= 0 && levelIndex < 10)
+    {
+        stuCapitalshipLevelInfo& li = faction.capitalShips[shipIndex].LevelInfo[levelIndex];
+        li.ExperienceToNextLevel = ui.lineEdit_NextExp->text().toDouble();
+    }
+
+    // 2. 逐文件写入 experience_to_next_level
+    for (int i = 0; i < 5; ++i)
+    {
+        QString filePath = QString("%1/entities/%2.unit")
+            .arg(m_strGamePath, faction.capitalShipFileNames[i]);
+        QFile file(filePath);
+        if (!file.open(QIODevice::ReadOnly))
+            continue;
+
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(file.readAll());
+        file.close();
+        if (jsonDoc.isNull() || !jsonDoc.isObject())
+            continue;
+
+        QJsonObject rootObj = jsonDoc.object();
+        QJsonObject levelsContainer = rootObj.value("levels").toObject();
+        QJsonArray levelsArray = levelsContainer.value("levels").toArray();
+        int updateCount = qMin(levelsArray.size(), 10);
+        const stuCapitalshipInfo& ship = faction.capitalShips[i];
+
+        for (int lvl = 0; lvl < updateCount; ++lvl)
+        {
+            QJsonObject levelObj = levelsArray[lvl].toObject();
+            levelObj["experience_to_next_level"] = ship.LevelInfo[lvl].ExperienceToNextLevel;
+            levelsArray[lvl] = levelObj;
+        }
+
+        levelsContainer["levels"] = levelsArray;
+        rootObj["levels"] = levelsContainer;
+        jsonDoc.setObject(rootObj);
+
+        if (file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+        {
+            file.write(jsonDoc.toJson(QJsonDocument::Indented));
+            file.close();
+        }
+    }
+}
+
+
 void SSE2_ConfigEditorMainWnd::OnFactionChanged(int index)
 {
     // 根据下拉框的索引设置当前阵营
@@ -403,6 +497,7 @@ void SSE2_ConfigEditorMainWnd::OnEditConfig()
     WriteMaxSupplyConfigToJson();
     WriteDefaultStartingAssetsToJson();
     WriteCapitalshipConfigToJson();
+    WriteCapitalshipExperienceToJson();
     QMessageBox::information(this, tr("提示"), tr("配置文件已成功修改！"));
 }
 
@@ -697,7 +792,8 @@ void SSE2_ConfigEditorMainWnd::OnCapitalshipTypeOrLevelChanged()
         old.MaxShield = ui.lineEdit_MaxShield->text().toDouble();
         old.ShieldRestoreRate = ui.lineEdit_ShieleRestoreRate->text().toDouble();
         old.ShieldRestoreCooldown = ui.lineEdit_ShieldRestoreCooldown->text().toDouble();
-        old.ShieldRestoreScale = ui.lineEdit_Titan_16->text().toDouble();
+        old.ShieldRestoreScale = ui.lineEdit_ShieldRestoreScalar->text().toDouble();
+        old.ExperienceToNextLevel = ui.lineEdit_NextExp->text().toDouble();
     }
 
     int shipIdx = ui.comboBox_CapitalShip->currentIndex();
@@ -719,9 +815,9 @@ void SSE2_ConfigEditorMainWnd::OnCapitalshipTypeOrLevelChanged()
     ui.lineEdit_MaxShield->setText(QString::number(li.MaxShield, 'f', 1));
     ui.lineEdit_ShieleRestoreRate->setText(QString::number(li.ShieldRestoreRate, 'f', 1));
     ui.lineEdit_ShieldRestoreCooldown->setText(QString::number(li.ShieldRestoreCooldown, 'f', 1));
-    ui.lineEdit_Titan_16->setText(QString::number(li.ShieldRestoreScale, 'f', 1));
+    ui.lineEdit_ShieldRestoreScalar->setText(QString::number(li.ShieldRestoreScale, 'f', 1));
+    ui.lineEdit_NextExp->setText(QString::number(li.ExperienceToNextLevel, 'f', 0));
 
-    ui.lineEdit_NextExp->setText("0");
 
     m_iCurrentShipIndex = shipIdx;
     m_iCurrentLevelIndex = levelIdx;
