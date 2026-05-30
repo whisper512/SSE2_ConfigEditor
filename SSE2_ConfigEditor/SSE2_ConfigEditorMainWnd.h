@@ -5,6 +5,10 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QMap>
+#include <QLabel>
+#include <QTimer>
+#include <QPixmap>
+#include <QGraphicsOpacityEffect>
 
 #include "DataStructure.h"
 #include "ui_SSE2_ConfigEditorMainWnd.h"
@@ -20,6 +24,7 @@ public:
 private:
     Ui::SSE2_ConfigEditorMainWndClass ui;
 
+
     QAction* m_pActionOpenGamePath;
     QAction* m_pActionWriteConfig;
     QAction* m_pActionSaveBackup;
@@ -29,8 +34,9 @@ private:
     QMap<eFaction, FactionData> m_factionDataMap;   // 全部6个阵营的数据
     FactionData* m_pCurrentFactionData = nullptr;   // 当前操作的阵营
 
-    int m_iCurrentShipIndex;    // 当前主力舰索引 (0~4)
-    int m_iCurrentLevelIndex;   // 当前等级索引 (0~9)
+    int m_iCurrentShipIndex;        // 当前主力舰索引 (0~4)
+    int m_iCurrentLevelIndex;       // 当前等级索引 (0~9)
+    int m_iCurrentTitanLevelIndex;  // 当前泰坦等级索引 (0~9)
 
 private:
     void InitApplication();
@@ -40,6 +46,7 @@ private:
     void InitData();
 
     void refreshCapitalshipCombox();
+    void refreshTitanCombox();
     void ReadConfig();
     void ConnectSlots();
 
@@ -69,13 +76,22 @@ private:
         const QJsonDocument& jsonDocC, const QJsonDocument& jsonDocD, const QJsonDocument& jsonDocE);
     void WriteCapitalshipExperienceToJson();
 
+    // 泰坦
+    void ParseTitanConfigFromJson(const QJsonDocument& jsonDoc);
+    void WriteTitanConfigToJson();
+    void ParseTitanExperienceFromJson(const QJsonDocument& jsonDoc);
+    void WriteTitanExperienceToJson();
+
     void OnOpenGamePath();
     void OnEditConfig();
     void OnSaveBackup();
     void OnTip();
 
+protected:
+
 private slots:
     void OnEditFinished();
     void OnCapitalshipTypeOrLevelChanged();
     void OnFactionChanged(int index);
+    void OnTitanLevelChanged();
 };

@@ -37,6 +37,17 @@
 #define Vasari_MarauderCaptialShip "vasari_marauder_capital_ship"
 
 // ============================================
+// 泰坦 .unit 文件名字符串宏
+// ============================================
+#define TL_TitanConfig "trader_loyalist_titan"
+#define TR_TitanConfig "trader_rebel_titan"
+#define VL_TitanConfig "vasari_loyalist_titan"
+#define VR_TitanConfig "vasari_rebel_titan"
+#define AL_TitanConfig "advent_loyalist_titan"
+#define AR_TitanConfig "advent_rebel_titan"
+
+
+// ============================================
 // 阵营枚举
 // ============================================
 enum eFaction
@@ -94,6 +105,37 @@ struct stuCapitalshipInfo
 };
 
 // ============================================
+// 泰坦单等级数据
+// ============================================
+struct stuTitanLevelInfo
+{
+    double MaxHull = 0.0;
+    double HullRestoreRate = 0.0;
+    double HullRestoreCooldown = 0.0;
+    double HullRestoreScale = 0.0;
+    double HullCrippledPercentage = 0.0;
+    double MaxArmor = 0.0;
+    double ArmorRestoreRate = 0.0;
+    double ArmorRestoreCooldown = 0.0;
+    double ArmorRestoreScale = 0.0;
+    double ArmorStrength = 0.0;
+    double MaxShield = 0.0;
+    double ShieldRestoreRate = 0.0;
+    double ShieldRestoreCooldown = 0.0;
+    double ShieldRestoreScale = 0.0;
+    double ExperienceToNextLevel = 0.0;
+};
+
+// ============================================
+// 泰坦结构体
+// ============================================
+struct stuTitanInfo
+{
+    stuTitanLevelInfo LevelInfo[10];
+};
+
+
+// ============================================
 // 单位限制配置
 // ============================================
 struct FactionUnitLimits
@@ -124,12 +166,14 @@ struct FactionData
     QString       displayName;
     QString       playerFileName;              // 无 .player 后缀
     QStringList   capitalShipFileNames;        // 5个 .unit 文件名
+    QString       titanFileName;               // 泰坦 .unit 文件名
     QStringList   capitalShipDisplayNames;     // 5个中文名
 
     FactionUnitLimits      unitLimits;
     QVector<int>           maxSupplyLevels;
     FactionStartingAssets  startingAssets;
     QVector<stuCapitalshipInfo> capitalShips;
+    stuTitanInfo titanData;             
 
     // 辅助
     bool hasCredits()       const { return startingAssets.hasCredits; }
@@ -172,6 +216,7 @@ inline QMap<eFaction, FactionData> CreateDefaultFactionConfigs()
         d.capitalShipDisplayNames = QStringList{ "科尔", "艾肯", "瓦索", "玛莎", "杜诺夫" };
         d.startingAssets.hasCredits = true;
         d.maxSupplyLevels.resize(6);
+        d.titanFileName = TL_TitanConfig;
         map.insert(Faction_TL, d);
     }
 
@@ -191,6 +236,7 @@ inline QMap<eFaction, FactionData> CreateDefaultFactionConfigs()
         d.capitalShipDisplayNames = QStringList{ "科尔", "艾肯", "瓦索", "玛莎", "杜诺夫" };
         d.startingAssets.hasCredits = true;
         d.maxSupplyLevels.resize(6);
+        d.titanFileName = TL_TitanConfig;
         map.insert(Faction_TR, d);
     }
 
@@ -210,6 +256,7 @@ inline QMap<eFaction, FactionData> CreateDefaultFactionConfigs()
         d.capitalShipDisplayNames = QStringList{ "克尔图", "加拉苏", "基兰查", "瓦诺克斯", "安特可" };
         d.startingAssets.hasCredits = false;
         d.maxSupplyLevels.resize(7);
+        d.titanFileName = VL_TitanConfig;
         map.insert(Faction_VL, d);
     }
 
@@ -229,6 +276,7 @@ inline QMap<eFaction, FactionData> CreateDefaultFactionConfigs()
         d.capitalShipDisplayNames = QStringList{ "克尔图", "加拉苏", "基兰查", "瓦诺克斯", "安特可" };
         d.startingAssets.hasCredits = false;
         d.maxSupplyLevels.resize(7);
+        d.titanFileName = VL_TitanConfig;
         map.insert(Faction_VR, d);
     }
 
@@ -248,6 +296,7 @@ inline QMap<eFaction, FactionData> CreateDefaultFactionConfigs()
         d.capitalShipDisplayNames = QStringList{ "光辉", "先祖", "宁静", "超度", "天启" };
         d.startingAssets.hasCredits = true;
         d.maxSupplyLevels.resize(6);
+        d.titanFileName = AL_TitanConfig;
         map.insert(Faction_AL, d);
     }
 
@@ -267,6 +316,7 @@ inline QMap<eFaction, FactionData> CreateDefaultFactionConfigs()
         d.capitalShipDisplayNames = QStringList{ "光辉", "先祖", "宁静", "超度", "天启" };
         d.startingAssets.hasCredits = true;
         d.maxSupplyLevels.resize(6);
+        d.titanFileName = AL_TitanConfig;
         map.insert(Faction_AR, d);
     }
 

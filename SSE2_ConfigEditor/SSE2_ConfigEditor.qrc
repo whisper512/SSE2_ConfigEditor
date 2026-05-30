@@ -1,5 +1,7 @@
 <RCC>
     <qresource prefix="/SSE2_ConfigEditorMainWnd">
         <file>res/blackcat.png</file>
+        <file>res/back1.png</file>
+        <file>res/back2.png</file>
     </qresource>
 </RCC>

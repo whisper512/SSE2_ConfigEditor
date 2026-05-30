@@ -1,6 +1,5 @@
 ﻿#include "SSE2_ConfigEditorMainWnd.h"
 
-#include <QTimer>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QFileInfo>
@@ -13,7 +12,8 @@ SSE2_ConfigEditorMainWnd::SSE2_ConfigEditorMainWnd(QWidget* parent)
     m_pActionSaveBackup(nullptr),
     m_strGamePath(""),
     m_iCurrentShipIndex(-1),
-    m_iCurrentLevelIndex(-1)
+    m_iCurrentLevelIndex(-1),
+    m_iCurrentTitanLevelIndex(-1)
 {
     ui.setupUi(this);
     setFixedSize(this->width(), this->height());
@@ -23,6 +23,7 @@ SSE2_ConfigEditorMainWnd::SSE2_ConfigEditorMainWnd(QWidget* parent)
 SSE2_ConfigEditorMainWnd::~SSE2_ConfigEditorMainWnd()
 {
 }
+
 
 void SSE2_ConfigEditorMainWnd::InitApplication()
 {
@@ -88,12 +89,17 @@ void SSE2_ConfigEditorMainWnd::refreshCapitalshipCombox()
         ui.comboBox_CapitalShip->addItem(name);
 }
 
+void SSE2_ConfigEditorMainWnd::refreshTitanCombox()
+{
+
+}
+
 void SSE2_ConfigEditorMainWnd::ConnectSlots()
 {
     connect(ui.comboBox_faction, QOverload<int>::of(&QComboBox::currentIndexChanged),
         this, &SSE2_ConfigEditorMainWnd::OnFactionChanged);
 
-    connect(ui.lineEdit_Titan, &QLineEdit::editingFinished, this, &SSE2_ConfigEditorMainWnd::OnEditFinished);
+    connect(ui.lineEdit_TitanNum, &QLineEdit::editingFinished, this, &SSE2_ConfigEditorMainWnd::OnEditFinished);
     connect(ui.lineEdit_SuperCapitalship, &QLineEdit::editingFinished, this, &SSE2_ConfigEditorMainWnd::OnEditFinished);
     connect(ui.lineEdit_starStarbase, &QLineEdit::editingFinished, this, &SSE2_ConfigEditorMainWnd::OnEditFinished);
     connect(ui.lineEdit_planetStarbase, &QLineEdit::editingFinished, this, &SSE2_ConfigEditorMainWnd::OnEditFinished);
@@ -102,6 +108,9 @@ void SSE2_ConfigEditorMainWnd::ConnectSlots()
         this, &SSE2_ConfigEditorMainWnd::OnCapitalshipTypeOrLevelChanged);
     connect(ui.comboBox_Levels, QOverload<int>::of(&QComboBox::currentIndexChanged),
         this, &SSE2_ConfigEditorMainWnd::OnCapitalshipTypeOrLevelChanged);
+
+    connect(ui.comboBox_TitanLevels, QOverload<int>::of(&QComboBox::currentIndexChanged),
+        this, &SSE2_ConfigEditorMainWnd::OnTitanLevelChanged);
 }
 
 void SSE2_ConfigEditorMainWnd::ReadConfig()
@@ -154,6 +163,28 @@ void SSE2_ConfigEditorMainWnd::ReadConfig()
         ParseCapitalshipExperienceFromJson(shipDocs[0], shipDocs[1], shipDocs[2],
             shipDocs[3], shipDocs[4]);
     }
+
+    // 读取泰坦文件
+    if (!faction.titanFileName.isEmpty()) {
+        QString titanPath = QString("%1/entities/%2.unit")
+            .arg(m_strGamePath, faction.titanFileName);
+        QFile titanFile(titanPath);
+        if (titanFile.open(QIODevice::ReadOnly))
+        {
+            QJsonDocument titanDoc = QJsonDocument::fromJson(titanFile.readAll());
+            titanFile.close();
+            ParseTitanConfigFromJson(titanDoc);
+            ParseTitanExperienceFromJson(titanDoc);
+        }
+        else
+        {
+            qDebug() << "无法打开泰坦文件:" << titanPath;
+        }
+    }
+
+    // 更新泰坦UI
+    m_iCurrentTitanLevelIndex = -1;
+    OnTitanLevelChanged();
 }
 
 void SSE2_ConfigEditorMainWnd::ParseUnitLimitConfigFromJson(const QJsonDocument& jsonDoc)
@@ -450,6 +481,198 @@ void SSE2_ConfigEditorMainWnd::WriteCapitalshipExperienceToJson()
     }
 }
 
+// ==================== 泰坦部分 ====================
+
+void SSE2_ConfigEditorMainWnd::ParseTitanConfigFromJson(const QJsonDocument& jsonDoc)
+{
+    if (jsonDoc.isNull() || !jsonDoc.isObject() || !m_pCurrentFactionData)
+        return;
+
+    QJsonObject root = jsonDoc.object();
+    QJsonObject healthObj = root.value("health").toObject();
+    if (healthObj.isEmpty())
+        return;
+
+    QJsonArray levels = healthObj.value("levels").toArray();
+    int count = qMin(levels.size(), 10);
+    stuTitanInfo& titan = m_pCurrentFactionData->titanData;
+    for (int i = 0; i < count; ++i)
+    {
+        QJsonObject lvl = levels[i].toObject();
+        stuTitanLevelInfo& li = titan.LevelInfo[i];
+        li.MaxHull = lvl.value("max_hull_points").toDouble();
+        li.HullRestoreRate = lvl.value("hull_point_restore_rate").toDouble();
+        li.HullRestoreCooldown = lvl.value("hull_point_restore_cooldown_duration_after_damage_taken").toDouble();
+        li.HullRestoreScale = lvl.value("hull_point_restore_scalar_after_damage_taken").toDouble();
+        li.HullCrippledPercentage = lvl.value("hull_crippled_percentage").toDouble();
+        li.MaxArmor = lvl.value("max_armor_points").toDouble();
+        li.ArmorRestoreRate = lvl.value("armor_point_restore_rate").toDouble();
+        li.ArmorRestoreCooldown = lvl.value("armor_point_restore_cooldown_duration_after_damage_taken").toDouble();
+        li.ArmorRestoreScale = lvl.value("armor_point_restore_scalar_after_damage_taken").toDouble();
+        li.ArmorStrength = lvl.value("armor_strength").toDouble();
+        li.MaxShield = lvl.value("max_shield_points").toDouble();
+        li.ShieldRestoreRate = lvl.value("shield_point_restore_rate").toDouble();
+        li.ShieldRestoreCooldown = lvl.value("shield_point_restore_cooldown_duration_after_damage_taken").toDouble();
+        li.ShieldRestoreScale = lvl.value("shield_point_restore_scalar_after_damage_taken").toDouble();
+    }
+}
+
+void SSE2_ConfigEditorMainWnd::WriteTitanConfigToJson()
+{
+    if (m_strGamePath.isEmpty() || !m_pCurrentFactionData)
+        return;
+
+    const FactionData& faction = *m_pCurrentFactionData;
+    if (faction.titanFileName.isEmpty())
+        return;
+
+    // 保存当前UI上的等级数据
+    int levelIndex = ui.comboBox_TitanLevels->currentIndex();
+    if (levelIndex >= 0 && levelIndex < 10)
+    {
+        stuTitanLevelInfo& li = m_pCurrentFactionData->titanData.LevelInfo[levelIndex];
+        li.MaxHull = ui.lineEdit_MaxHull_Titan->text().toDouble();
+        li.HullRestoreRate = ui.lineEdit_HullRestoreRate_Titan->text().toDouble();
+        li.HullRestoreCooldown = ui.lineEdit_HullRestoreCooldown_Titan->text().toDouble();
+        li.HullRestoreScale = ui.lineEdit_HullRestoreScalar_Titan->text().toDouble();
+        li.HullCrippledPercentage = ui.lineEdit_CrippledPercentage_Titan->text().toDouble();
+        li.MaxArmor = ui.lineEdit_MaxArmor_Titan->text().toDouble();
+        li.ArmorRestoreRate = ui.lineEdit_ArmorRestoreRate_Titan->text().toDouble();
+        li.ArmorRestoreCooldown = ui.lineEdit_ArmorRestoreCooldown_Titan->text().toDouble();
+        li.ArmorRestoreScale = ui.lineEdit_ArmorRestoreScalar_Titan->text().toDouble();
+        li.ArmorStrength = ui.lineEdit_ArmorStrength_Titan->text().toDouble();
+        li.MaxShield = ui.lineEdit_MaxShield_Titan->text().toDouble();
+        li.ShieldRestoreRate = ui.lineEdit_ShieleRestoreRate_Titan->text().toDouble();
+        li.ShieldRestoreCooldown = ui.lineEdit_ShieldRestoreCooldown_Titan->text().toDouble();
+        li.ShieldRestoreScale = ui.lineEdit_ShieldRestoreScalar_Titan->text().toDouble();
+    }
+
+    QString filePath = QString("%1/entities/%2.unit")
+        .arg(m_strGamePath, faction.titanFileName);
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly))
+        return;
+
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(file.readAll());
+    file.close();
+    if (jsonDoc.isNull() || !jsonDoc.isObject())
+        return;
+
+    QJsonObject rootObj = jsonDoc.object();
+    QJsonObject healthObj = rootObj.value("health").toObject();
+    if (healthObj.isEmpty())
+        return;
+
+    QJsonArray levelsArray = healthObj.value("levels").toArray();
+    int updateCount = qMin(levelsArray.size(), 10);
+    const stuTitanInfo& titan = faction.titanData;
+
+    for (int lvl = 0; lvl < updateCount; ++lvl)
+    {
+        const stuTitanLevelInfo& li = titan.LevelInfo[lvl];
+        QJsonObject levelObj = levelsArray[lvl].toObject();
+        levelObj["max_hull_points"] = li.MaxHull;
+        levelObj["hull_point_restore_rate"] = li.HullRestoreRate;
+        levelObj["hull_point_restore_cooldown_duration_after_damage_taken"] = li.HullRestoreCooldown;
+        levelObj["hull_point_restore_scalar_after_damage_taken"] = li.HullRestoreScale;
+        levelObj["hull_crippled_percentage"] = li.HullCrippledPercentage;
+        levelObj["max_armor_points"] = li.MaxArmor;
+        levelObj["armor_point_restore_rate"] = li.ArmorRestoreRate;
+        levelObj["armor_point_restore_cooldown_duration_after_damage_taken"] = li.ArmorRestoreCooldown;
+        levelObj["armor_point_restore_scalar_after_damage_taken"] = li.ArmorRestoreScale;
+        levelObj["armor_strength"] = li.ArmorStrength;
+        levelObj["max_shield_points"] = li.MaxShield;
+        levelObj["shield_point_restore_rate"] = li.ShieldRestoreRate;
+        levelObj["shield_point_restore_cooldown_duration_after_damage_taken"] = li.ShieldRestoreCooldown;
+        levelObj["shield_point_restore_scalar_after_damage_taken"] = li.ShieldRestoreScale;
+
+        levelsArray[lvl] = levelObj;
+    }
+
+    healthObj["levels"] = levelsArray;
+    rootObj["health"] = healthObj;
+    jsonDoc.setObject(rootObj);
+
+    if (file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+        file.write(jsonDoc.toJson(QJsonDocument::Indented));
+        file.close();
+    }
+}
+
+void SSE2_ConfigEditorMainWnd::ParseTitanExperienceFromJson(const QJsonDocument& jsonDoc)
+{
+    if (jsonDoc.isNull() || !jsonDoc.isObject() || !m_pCurrentFactionData)
+        return;
+
+    QJsonObject root = jsonDoc.object();
+    QJsonObject levelsContainer = root.value("levels").toObject();
+    if (levelsContainer.isEmpty())
+        return;
+
+    QJsonArray levels = levelsContainer.value("levels").toArray();
+    int count = qMin(levels.size(), 10);
+    stuTitanInfo& titan = m_pCurrentFactionData->titanData;
+    for (int i = 0; i < count; ++i)
+    {
+        QJsonObject lvl = levels[i].toObject();
+        titan.LevelInfo[i].ExperienceToNextLevel = lvl.value("experience_to_next_level").toDouble();
+    }
+}
+
+void SSE2_ConfigEditorMainWnd::WriteTitanExperienceToJson()
+{
+    if (m_strGamePath.isEmpty() || !m_pCurrentFactionData)
+        return;
+
+    const FactionData& faction = *m_pCurrentFactionData;
+    if (faction.titanFileName.isEmpty())
+        return;
+
+    // 保存UI上的经验值
+    int levelIndex = ui.comboBox_TitanLevels->currentIndex();
+    if (levelIndex >= 0 && levelIndex < 10)
+    {
+        stuTitanLevelInfo& li = m_pCurrentFactionData->titanData.LevelInfo[levelIndex];
+        li.ExperienceToNextLevel = ui.lineEdit_NextExp_Titan->text().toDouble();
+    }
+
+    QString filePath = QString("%1/entities/%2.unit")
+        .arg(m_strGamePath, faction.titanFileName);
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly))
+        return;
+
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(file.readAll());
+    file.close();
+    if (jsonDoc.isNull() || !jsonDoc.isObject())
+        return;
+
+    QJsonObject rootObj = jsonDoc.object();
+    QJsonObject levelsContainer = rootObj.value("levels").toObject();
+    QJsonArray levelsArray = levelsContainer.value("levels").toArray();
+    int updateCount = qMin(levelsArray.size(), 10);
+    const stuTitanInfo& titan = faction.titanData;
+
+    for (int lvl = 0; lvl < updateCount; ++lvl)
+    {
+        QJsonObject levelObj = levelsArray[lvl].toObject();
+        levelObj["experience_to_next_level"] = titan.LevelInfo[lvl].ExperienceToNextLevel;
+        levelsArray[lvl] = levelObj;
+    }
+
+    levelsContainer["levels"] = levelsArray;
+    rootObj["levels"] = levelsContainer;
+    jsonDoc.setObject(rootObj);
+
+    if (file.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    {
+        file.write(jsonDoc.toJson(QJsonDocument::Indented));
+        file.close();
+    }
+}
+
+// ==================== 事件处理 ====================
 
 void SSE2_ConfigEditorMainWnd::OnFactionChanged(int index)
 {
@@ -463,6 +686,7 @@ void SSE2_ConfigEditorMainWnd::OnFactionChanged(int index)
     // 重置主力舰索引
     m_iCurrentShipIndex = -1;
     m_iCurrentLevelIndex = -1;
+    m_iCurrentTitanLevelIndex = -1;
 
     // 显示/隐藏瓦萨里专用控件
     bool isVasari = (newFaction == Faction_VL || newFaction == Faction_VR);
@@ -472,6 +696,7 @@ void SSE2_ConfigEditorMainWnd::OnFactionChanged(int index)
     ui.lineEdit_default_starting_credit->setVisible(!isVasari);
 
     refreshCapitalshipCombox();
+    refreshTitanCombox();
     ReadConfig();
 }
 
@@ -485,6 +710,7 @@ void SSE2_ConfigEditorMainWnd::OnOpenGamePath()
         m_strGamePath = fileInfo.absolutePath();
     }
     refreshCapitalshipCombox();
+    refreshTitanCombox();
     ReadConfig();
 }
 
@@ -498,6 +724,8 @@ void SSE2_ConfigEditorMainWnd::OnEditConfig()
     WriteDefaultStartingAssetsToJson();
     WriteCapitalshipConfigToJson();
     WriteCapitalshipExperienceToJson();
+    WriteTitanConfigToJson();
+    WriteTitanExperienceToJson();
     QMessageBox::information(this, tr("提示"), tr("配置文件已成功修改！"));
 }
 
@@ -511,12 +739,13 @@ void SSE2_ConfigEditorMainWnd::OnTip()
     QMessageBox::information(this, tr("提示"), tr("注意在完成修改切换下拉框前写入配置"));
 }
 
+
 void SSE2_ConfigEditorMainWnd::UpdateUnitsLimitData()
 {
     if (!m_pCurrentFactionData)
         return;
     const auto& lim = m_pCurrentFactionData->unitLimits;
-    ui.lineEdit_Titan->setText(QString::number(lim.titan));
+    ui.lineEdit_TitanNum->setText(QString::number(lim.titan));
     ui.lineEdit_SuperCapitalship->setText(QString::number(lim.superCapitalShip));
     ui.lineEdit_starStarbase->setText(QString::number(lim.starStarbase));
     ui.lineEdit_planetStarbase->setText(QString::number(lim.planetStarbase));
@@ -734,7 +963,7 @@ void SSE2_ConfigEditorMainWnd::WriteDefaultStartingAssetsToJson()
 
 void SSE2_ConfigEditorMainWnd::IntiEditor()
 {
-    ui.lineEdit_Titan->setValidator(new QIntValidator(0, 50, this));
+    ui.lineEdit_TitanNum->setValidator(new QIntValidator(0, 50, this));
     ui.lineEdit_SuperCapitalship->setValidator(new QIntValidator(0, 50, this));
     ui.lineEdit_starStarbase->setValidator(new QIntValidator(0, 50, this));
     ui.lineEdit_planetStarbase->setValidator(new QIntValidator(0, 50, this));
@@ -748,7 +977,10 @@ void SSE2_ConfigEditorMainWnd::IntiEditor()
     ui.comboBox_faction->addItem(tr("圣临反叛派"));       // Faction_AR
 
     for (int i = 1; i <= 10; ++i)
+    {
         ui.comboBox_Levels->addItem(QString::number(i));
+        ui.comboBox_TitanLevels->addItem(QString::number(i));
+    }
 }
 
 void SSE2_ConfigEditorMainWnd::OnEditFinished()
@@ -756,7 +988,7 @@ void SSE2_ConfigEditorMainWnd::OnEditFinished()
     if (!m_pCurrentFactionData)
         return;
 
-    m_pCurrentFactionData->unitLimits.titan = ui.lineEdit_Titan->text().toInt();
+    m_pCurrentFactionData->unitLimits.titan = ui.lineEdit_TitanNum->text().toInt();
     m_pCurrentFactionData->unitLimits.superCapitalShip = ui.lineEdit_SuperCapitalship->text().toInt();
     m_pCurrentFactionData->unitLimits.starStarbase = ui.lineEdit_starStarbase->text().toInt();
     m_pCurrentFactionData->unitLimits.planetStarbase = ui.lineEdit_planetStarbase->text().toInt();
@@ -821,4 +1053,56 @@ void SSE2_ConfigEditorMainWnd::OnCapitalshipTypeOrLevelChanged()
 
     m_iCurrentShipIndex = shipIdx;
     m_iCurrentLevelIndex = levelIdx;
+}
+
+void SSE2_ConfigEditorMainWnd::OnTitanLevelChanged()
+{
+    if (!m_pCurrentFactionData)
+        return;
+
+    stuTitanInfo& titan = m_pCurrentFactionData->titanData;
+
+    // 保存旧等级数据
+    if (m_iCurrentTitanLevelIndex >= 0 && m_iCurrentTitanLevelIndex < 10)
+    {
+        stuTitanLevelInfo& old = titan.LevelInfo[m_iCurrentTitanLevelIndex];
+        old.MaxHull = ui.lineEdit_MaxHull_Titan->text().toDouble();
+        old.HullRestoreRate = ui.lineEdit_HullRestoreRate_Titan->text().toDouble();
+        old.HullRestoreCooldown = ui.lineEdit_HullRestoreCooldown_Titan->text().toDouble();
+        old.HullRestoreScale = ui.lineEdit_HullRestoreScalar_Titan->text().toDouble();
+        old.HullCrippledPercentage = ui.lineEdit_CrippledPercentage_Titan->text().toDouble();
+        old.MaxArmor = ui.lineEdit_MaxArmor_Titan->text().toDouble();
+        old.ArmorRestoreRate = ui.lineEdit_ArmorRestoreRate_Titan->text().toDouble();
+        old.ArmorRestoreCooldown = ui.lineEdit_ArmorRestoreCooldown_Titan->text().toDouble();
+        old.ArmorRestoreScale = ui.lineEdit_ArmorRestoreScalar_Titan->text().toDouble();
+        old.ArmorStrength = ui.lineEdit_ArmorStrength_Titan->text().toDouble();
+        old.MaxShield = ui.lineEdit_MaxShield_Titan->text().toDouble();
+        old.ShieldRestoreRate = ui.lineEdit_ShieleRestoreRate_Titan->text().toDouble();
+        old.ShieldRestoreCooldown = ui.lineEdit_ShieldRestoreCooldown_Titan->text().toDouble();
+        old.ShieldRestoreScale = ui.lineEdit_ShieldRestoreScalar_Titan->text().toDouble();
+        old.ExperienceToNextLevel = ui.lineEdit_NextExp_Titan->text().toDouble();
+    }
+
+    int levelIdx = ui.comboBox_TitanLevels->currentIndex();
+    if (levelIdx < 0 || levelIdx >= 10)
+        return;
+
+    const stuTitanLevelInfo& li = titan.LevelInfo[levelIdx];
+    ui.lineEdit_MaxHull_Titan->setText(QString::number(li.MaxHull, 'f', 1));
+    ui.lineEdit_HullRestoreRate_Titan->setText(QString::number(li.HullRestoreRate, 'f', 1));
+    ui.lineEdit_HullRestoreCooldown_Titan->setText(QString::number(li.HullRestoreCooldown, 'f', 1));
+    ui.lineEdit_HullRestoreScalar_Titan->setText(QString::number(li.HullRestoreScale, 'f', 1));
+    ui.lineEdit_CrippledPercentage_Titan->setText(QString::number(li.HullCrippledPercentage, 'f', 2));
+    ui.lineEdit_MaxArmor_Titan->setText(QString::number(li.MaxArmor, 'f', 1));
+    ui.lineEdit_ArmorRestoreRate_Titan->setText(QString::number(li.ArmorRestoreRate, 'f', 1));
+    ui.lineEdit_ArmorRestoreCooldown_Titan->setText(QString::number(li.ArmorRestoreCooldown, 'f', 1));
+    ui.lineEdit_ArmorRestoreScalar_Titan->setText(QString::number(li.ArmorRestoreScale, 'f', 1));
+    ui.lineEdit_ArmorStrength_Titan->setText(QString::number(li.ArmorStrength, 'f', 1));
+    ui.lineEdit_MaxShield_Titan->setText(QString::number(li.MaxShield, 'f', 1));
+    ui.lineEdit_ShieleRestoreRate_Titan->setText(QString::number(li.ShieldRestoreRate, 'f', 1));
+    ui.lineEdit_ShieldRestoreCooldown_Titan->setText(QString::number(li.ShieldRestoreCooldown, 'f', 1));
+    ui.lineEdit_ShieldRestoreScalar_Titan->setText(QString::number(li.ShieldRestoreScale, 'f', 1));
+    ui.lineEdit_NextExp_Titan->setText(QString::number(li.ExperienceToNextLevel, 'f', 0));
+
+    m_iCurrentTitanLevelIndex = levelIdx;
 }
