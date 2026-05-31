@@ -84,19 +84,26 @@ void SSE2_ConfigEditorMainWnd::InitMainWnd()
     }
     /* 下拉框 */
     QComboBox {
-        background: rgba(255,255,255,255);
+        background: #ffffff;
         border: 1px solid #bdc3c7;
         border-radius: 4px;
-        padding: 4px 10px;
+        padding: 4px 30px 4px 10px;  /* 右侧留出按钮空间 */
         color: #2c3e50;
         min-width: 100px;
     }
+    QComboBox::down-arrow {
+        image: url(:/SSE2_ConfigEditorMainWnd/res/combox.png);
+        width: 24px;
+        height: 24px;
+        right: 5px;        /* 在 drop-down 内的位置 */
+        background: transparent;
+    }
     QComboBox::drop-down {
+        width: 24px;
+        background: transparent;
+        border: none;
         subcontrol-origin: padding;
         subcontrol-position: top right;
-        width: 24px;
-        background: transparent;            /* 透明显示默认箭头 */
-        border: none;
     }
     QComboBox QAbstractItemView {
         background: #ffffff;
