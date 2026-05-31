@@ -4,6 +4,10 @@
 #include <QMessageBox>
 #include <QFileInfo>
 #include <QVector>
+#include <QDir>
+#include <QDirIterator>
+#include <QProgressDialog>
+#include <QApplication>
 
 SSE2_ConfigEditorMainWnd::SSE2_ConfigEditorMainWnd(QWidget* parent)
     : QMainWindow(parent),
@@ -824,12 +828,87 @@ void SSE2_ConfigEditorMainWnd::OnEditConfig()
 
 void SSE2_ConfigEditorMainWnd::OnSaveBackup()
 {
-    // 保留空实现
+    if (m_strGamePath.isEmpty()) {
+        QMessageBox::warning(this, tr("警告"), tr("请先选择游戏路径！"));
+        return;
+    }
+
+    const QString entityPath = m_strGamePath + "/entities";
+    QDir entityDir(entityPath);
+    if (!entityDir.exists()) {
+        QMessageBox::warning(this, tr("错误"), tr("未找到entities目录：%1").arg(entityPath));
+        return;
+    }
+
+    const QString backupPath = m_strGamePath + "/entitiesbackup";
+    QDir backupDir(backupPath);
+    if (backupDir.exists()) {
+        backupDir.removeRecursively();
+    }
+
+    int totalFiles = 0;
+    {
+        QDirIterator countIt(entityPath, QDir::Files | QDir::NoDotAndDotDot,
+            QDirIterator::Subdirectories);
+        while (countIt.hasNext()) {
+            countIt.next();
+            totalFiles++;
+        }
+    }
+    if (totalFiles == 0) {
+        QMessageBox::information(this, tr("信息"), tr("entities目录为空，无需备份。"));
+        return;
+    }
+
+    QProgressDialog progress(tr("正在备份entities文件夹..."), tr("取消"), 0, totalFiles, this);
+    progress.setWindowTitle(tr("备份进度"));
+    progress.setWindowModality(Qt::WindowModal);
+    progress.setMinimumDuration(0);          // 立即显示
+    progress.setValue(0);
+
+    
+    QDirIterator srcIt(entityPath, QDir::Files | QDir::NoDotAndDotDot,
+        QDirIterator::Subdirectories);
+    int copied = 0;
+    while (srcIt.hasNext()) {
+        // 检查用户是否取消
+        if (progress.wasCanceled()) {
+            QDir(backupPath).removeRecursively();  // 清理已拷贝的残缺备份
+            break;
+        }
+
+        const QString srcFile = srcIt.next();
+        // 保持目录结构：entities 下的相对路径
+        const QString relPath = entityDir.relativeFilePath(srcFile);
+        const QString destFile = backupPath + "/" + relPath;
+
+        // 确保目标目录存在
+        QDir().mkpath(QFileInfo(destFile).absolutePath());
+
+        // 执行拷贝（若失败给出警告但继续）
+        if (!QFile::copy(srcFile, destFile)) {
+            QMessageBox::warning(this, tr("错误"),
+                tr("复制文件失败：%1").arg(srcFile));
+        }
+
+        copied++;
+        progress.setValue(copied);
+        QApplication::processEvents();
+    }
+
+    if (copied == totalFiles) {
+        progress.setValue(totalFiles);
+        QMessageBox::information(this, tr("完成"),
+            tr("备份完成！\n备份目录：%1").arg(backupPath));
+    }
 }
 
 void SSE2_ConfigEditorMainWnd::OnTip()
 {
-    QMessageBox::information(this, tr("提示"), tr("注意在完成修改切换下拉框前写入配置"));
+    QMessageBox::information(this, tr("提示"),
+        tr("1.打开游戏路径,选择游戏目录下的sins2.exe\n"
+           "2.保存备份,会在游戏路径下备份entities文件夹,备份的文件夹名为entitiesbackup,可以随时替换回去\n"
+           "3.改完属性后写入配置"));
 }
 
 
